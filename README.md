@@ -1,7 +1,11 @@
 # Snowdar
 Snow lidar time-lapse for snow surface morphology and wind transport flux estimate
 
-## Code Structure
+All hardware design available in the folder `hardware`, and and Python App in `app`.
+
+## Python App
+
+### Code Structure
 
 0. Objectives:
   - 1m2 subsample column vertical from lidar stored in `.las`
@@ -14,6 +18,17 @@ Snow lidar time-lapse for snow surface morphology and wind transport flux estima
 
 **IMPORTANT:** automatic startup
 
+### Install Environment
+
+- install Raspbian
+
 ## TODO
-- Python app (Luc)
-- Mounting brackets (Simon)
+- Luc & Simon: 
+  - Python app
+  - Raspberry pi setup:
+    - SSH/SCP config
+    - IP adress via DynDNS
+- John & Simon:
+  - Mounting brackets, 
+  - power supply, 
+  - ethernet connection 
