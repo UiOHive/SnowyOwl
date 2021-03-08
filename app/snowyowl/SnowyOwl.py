@@ -3,7 +3,7 @@ from datetime import datetime
 import time, os, sys
 import numpy as np
 from laspy.file import File as lasFile
-from math import sind, cosd
+from math import sin, cos, radians
 import pdal
 
 class SnowyOwl():
@@ -19,9 +19,9 @@ class SnowyOwl():
         self.outfolder = outfolder
         self.ip_livox = ip_livox
         self.ip_computer = ip_computer
-        Mom = np.matrix([[1, 0, 0], [0, cosd(extrinsic[3]), sind(extrinsic[3])], [0, -sind(extrinsic[3]), cosd(extrinsic[3])]])
-        Mph = np.matrix([[cosd(extrinsic[4]), 0, -sind(extrinsic[4])], [0, 1, 0], [sind(extrinsic[4]), 0, cosd(extrinsic[4])]])
-        Mkp = np.matrix([[cosd(extrinsic[5]), sind(extrinsic[5]), 0], [-sind(extrinsic[5]), cosd(extrinsic[5]), 0], [0, 0, 1]])
+        Mom = np.matrix([[1, 0, 0], [0, cos(radians(extrinsic[3])), sin(radians(extrinsic[3]))], [0, -sin(radians(extrinsic[3])), cos(radians(extrinsic[3]))]])
+        Mph = np.matrix([[cos(radians(extrinsic[4])), 0, -sin(radians(extrinsic[4]))], [0, 1, 0], [sin(radians(extrinsic[4])), 0, cos(radians(extrinsic[4]))]])
+        Mkp = np.matrix([[cos(radians(extrinsic[5])), sin(radians(extrinsic[5])), 0], [-sin(radians(extrinsic[5])), cos(radians(extrinsic[5])), 0], [0, 0, 1]])
         rotMat = (Mkp * Mph * Mom).getA().flatten()
         self.affineMatrix=np.concatenate((rotMat[0:3],[extrinsic[0]],rotMat[3:7],[extrinsic[1]],rotMat[7:9],[extrinsic[2]],[0],[0],[0],[1]))
         self.affineMatrixString = ' '.join([str(elem) for elem in self.affineMatrix])
@@ -80,14 +80,14 @@ class SnowyOwl():
             # create pdal transormation JSON
             json = """
             [
-                " """ + self.outfolder + "tmp/" +  listtmpfiles[f] + """.las",
+                """ + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """.las",
                 {
                     "type":"filters.transformation",
                     "matrix":" """ + self.affineMatrixString + """"
-                }
-                    {
+                },
+                {
                     "type":"writers.las",
-                    "filename":" """ + self.outfolder + "tmp/" +  listtmpfiles[f] + """_transformed.las"
+                    "filename":""" + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """_transformed.las"
                 }
             ]
             """
