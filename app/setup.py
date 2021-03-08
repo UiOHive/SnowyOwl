@@ -46,7 +46,7 @@ setup(
     # What does your project relate to?
     keywords=['LiDAR','Snow'],
     packages=find_packages(),
-    install_requires=['matplotlib', 'pandas', 'numpy', 'gdal', 'scipy', 'geopandas', 'plyfile', 'openpylivox'],
+    install_requires=['matplotlib', 'pandas', 'numpy', 'scipy', 'geopandas', 'plyfile'],
     include_package_data=True
 
 )

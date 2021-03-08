@@ -1,0 +1,12 @@
+MANIFEST.in
+README.md
+setup.cfg
+setup.py
+snowyOwl.egg-info/PKG-INFO
+snowyOwl.egg-info/SOURCES.txt
+snowyOwl.egg-info/dependency_links.txt
+snowyOwl.egg-info/requires.txt
+snowyOwl.egg-info/top_level.txt
+snowyowl/SnowyOwl.py
+snowyowl/SnowyOwl_example.py
+snowyowl/__init__.py

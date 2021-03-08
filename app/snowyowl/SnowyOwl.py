@@ -2,21 +2,31 @@ import openpylivox as opl
 from datetime import datetime
 import time, os, sys
 import numpy as np
+from laspy.file import File as lasFile
+from math import sind, cosd
+import pdal
 
 class SnowyOwl():
-    def __init__(self, outfolder="/home/luc/data/LIVOX/", ip_livox="192.168.1.104", ip_computer="192.168.1.2"):
+    def __init__(self, outfolder="/home/luc/data/LIVOX/", ip_livox="192.168.1.104", ip_computer="192.168.1.2", extrinsic=[0,0,0,0,0,0]):
         '''
         outFolder: location of output
         LIVOX_IP: IP address of LIVOX sensor (typically 198.168.1.1XX, with XX the last numbers of serial number)
         Computer_IP: IP of the computer, setup fixed on the network connecting to the LIVOX
+        extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
 
         '''
 
         self.outfolder = outfolder
         self.ip_livox = ip_livox
         self.ip_computer = ip_computer
+        Mom = np.matrix([[1, 0, 0], [0, cosd(extrinsic[3]), sind(extrinsic[3])], [0, -sind(extrinsic[3]), cosd(extrinsic[3])]])
+        Mph = np.matrix([[cosd(extrinsic[4]), 0, -sind(extrinsic[4])], [0, 1, 0], [sind(extrinsic[4]), 0, cosd(extrinsic[4])]])
+        Mkp = np.matrix([[cosd(extrinsic[5]), sind(extrinsic[5]), 0], [-sind(extrinsic[5]), cosd(extrinsic[5]), 0], [0, 0, 1]])
+        rotMat = (Mkp * Mph * Mom).getA().flatten()
+        self.affineMatrix=np.concatenate((rotMat[0:3],[extrinsic[0]],rotMat[3:7],[extrinsic[1]],rotMat[7:9],[extrinsic[2]],[0],[0],[0],[1]))
+        self.affineMatrixString = ' '.join([str(elem) for elem in self.affineMatrix])
 
-    def acquiereNCloud(self, duration=3.0, number_of_scans=1, duration_between_scans=10, outFolder):
+    def acquiereNCloud(self, duration=3.0, number_of_scans=1, duration_between_scans=10):
         # Setup
         # duration : integration time for the lidar in seconds (default = 3s)
         # number_of_scans : number of consecutive scans to be made (default = 1)
@@ -57,12 +67,64 @@ class SnowyOwl():
         sensor.lidarSpinDown()
         sensor.disconnect()
 
-    def extractDatafrombin(self):
+    def extractDatafrombin(self, corners = [0.75,1.25,-0.25,0.25]):
+        '''
+        :param corners: [x_min,x_max,y_min,y_max] of the cropped area to keep all point for
+        :return:
+        '''
+        # TODO create CloudCompare transformation file automatically fromm extrinsics
         listtmpfiles = os.listdir(self.outfolder + "tmp/")
-        for i in range(0,len(listtmpfiles)):
-            opl.convertBin2LAS(listtmpfiles[i], deleteBin=True)
+        for f in range(0,len(listtmpfiles)):
+            opl.convertBin2LAS(self.outfolder + "tmp/" + listtmpfiles[f], deleteBin=True)
+            # Tranform cloud accoring to extrinsics
+            # create pdal transormation JSON
+            json = """
+            [
+                " """ + self.outfolder + "tmp/" +  listtmpfiles[f] + """.las",
+                {
+                    "type":"filters.transformation",
+                    "matrix":" """ + self.affineMatrixString + """"
+                }
+                    {
+                    "type":"writers.las",
+                    "filename":" """ + self.outfolder + "tmp/" +  listtmpfiles[f] + """_transformed.las"
+                }
+            ]
+            """
+            pipeline = pdal.Pipeline(json)
+            count = pipeline.execute()
+            arrays = pipeline.arrays
+            metadata = pipeline.metadata
+            log = pipeline.log
+
+            # use CloudCompareto rotate the Cloud of the appropriate value
+            commandRotate = 'cloudcompare.CloudCompare -SILENT -o '+ self.outfolder + "tmp/" + listtmpfiles[f] + '.las -APPLY_TRANS CCTransform.txt'
+            print(commandRotate)
+            os.system(commandRotate)
+            # make DEM from Cloud
+            commandRaster='cloudcompare.CloudCompare -SILENT -o -RASTERIZE -GRID_STEP 0.1 -PROJ MIN -OUTPUT_RASTER_Z'
+            print(commandRaster)
+            os.system(commandRaster)
+
+
+            inFile = lasFile(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', mode='r')
+            # extract points
+            coords= inFile.points  #= np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
+            # transpose using external orientation.
+            for i in range(len(inFile.x)):
+                newcoord=self.rotMat * np.matrix([[coords[i,0] - self.sensorPos[0]], [coords[i,1] - self.sensorPos[1]], [coords[i,2] - self.sensorPos[2]]])
+                coords[i] = newcoord.getA()
+            # create filter to remove points out of square of interest
+            filter = np.logical_and(np.logical_and(coords[:,0] >= corners[0],coords[:,0] <= corners[1]),np.logical_and(coords[:,1] >= corners[2],coords[:,1] <= corners[3]))
+
+            # Grab an array of all points which meet this threshold
+            points_kept = inFile.points[filter]
+            outFile = lasFile(self.outfolder + listtmpfiles[f] + '.las', mode="w",header=inFile.header)
+            outFile.points = points_kept
+            outFile.close()
+
             # move output out of tmp folder
-            os.rename(self.outfolder + "tmp/" + listtmpfiles[i], self.outfolder + listtmpfiles[i])
+            os.rename(self.outfolder + "tmp/" + listtmpfiles[i] + '.las', self.outfolder + listtmpfiles[i] + '.las')
 
 
 
