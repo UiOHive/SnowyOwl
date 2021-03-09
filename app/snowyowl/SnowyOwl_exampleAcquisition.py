@@ -1,4 +1,3 @@
-from snowyowl import SnowyOwl as SO
 from snowyowl import SnowyOwlAcquisition as SOA
 #path = "/home/luc/data/LIVOX/"
 path = "/home/pi/data/livox_raw/"
