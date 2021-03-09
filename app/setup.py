@@ -46,7 +46,9 @@ setup(
     # What does your project relate to?
     keywords=['LiDAR','Snow'],
     packages=find_packages(),
-    install_requires=['matplotlib', 'pandas', 'numpy','laspy'],
+
+
+    install_requires=['matplotlib', 'pandas', 'numpy','laspy', 'scipy'],
     include_package_data=True
 
 )
