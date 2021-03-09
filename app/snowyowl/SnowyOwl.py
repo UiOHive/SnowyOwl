@@ -58,6 +58,7 @@ class SnowyOwl():
             arrays = pipeline.arrays
             metadata = pipeline.metadata
             log = pipeline.log
+
             #
             # # use CloudCompareto rotate the Cloud of the appropriate value
             # commandRotate = 'cloudcompare.CloudCompare -SILENT -o '+ self.outfolder + "tmp/" + listtmpfiles[f] + '.las -APPLY_TRANS CCTransform.txt'
