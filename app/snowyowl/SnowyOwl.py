@@ -42,7 +42,7 @@ class SnowyOwl():
             # extract points
             coords = np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
             # transpose using external orientation.
-            coordsRotated=rotMat2.apply(coords)
+            coordsRotated=self.rotMat2.apply(coords)
             fig = plt.figure()
             ax = Axes3D(fig)
             ax.scatter(coords[1:10000, 0], coords[1:10000, 1], coords[1:10000, 2])
