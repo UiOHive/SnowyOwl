@@ -4,7 +4,7 @@ import time, os, sys
 import numpy as np
 from laspy.file import File as lasFile
 from math import sin, cos, radians
-import pdal
+#import pdal
 
 class SnowyOwl():
     def __init__(self, outfolder="/home/luc/data/LIVOX/", ip_livox="192.168.1.104", ip_computer="192.168.1.2", extrinsic=[0,0,0,0,0,0]):
@@ -91,14 +91,14 @@ class SnowyOwl():
                 }
             ]
             """
-            pipeline = pdal.Pipeline(json)
-            count = pipeline.execute()
-            arrays = pipeline.arrays
-            metadata = pipeline.metadata
-            log = pipeline.log
+ #           pipeline = pdal.Pipeline(json)
+ #           count = pipeline.execute()
+ #           arrays = pipeline.arrays
+ #           metadata = pipeline.metadata
+ #           log = pipeline.log
 
             # use CloudCompareto rotate the Cloud of the appropriate value
-            commandRotate = 'cloudcompare.CloudCompare -SILENT -o '+ self.outfolder + "tmp/" + listtmpfiles[f] + '.las -APPLY_TRANS CCTransform.txt'
+ #           commandRotate = 'cloudcompare.CloudCompare -SILENT -o '+ self.outfolder + "tmp/" + listtmpfiles[f] + '.las -APPLY_TRANS CCTransform.txt'
             print(commandRotate)
             os.system(commandRotate)
             # make DEM from Cloud

@@ -1,6 +1,4 @@
 matplotlib
 pandas
 numpy
-scipy
-geopandas
-plyfile
+laspy
