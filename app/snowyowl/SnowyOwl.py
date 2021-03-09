@@ -20,14 +20,16 @@ class SnowyOwl():
         '''
 
         self.outfolder = outfolder
-        self.rotMat2=R.from_rotvec([radians(extrinsic[3]),radians(extrinsic[4]),radians(extrinsic[5])])
-        #
-        # Mom = np.matrix([[1, 0, 0], [0, cos(radians(extrinsic[3])), sin(radians(extrinsic[3]))], [0, -sin(radians(extrinsic[3])), cos(radians(extrinsic[3]))]])
-        # Mph = np.matrix([[cos(radians(extrinsic[4])), 0, -sin(radians(extrinsic[4]))], [0, 1, 0], [sin(radians(extrinsic[4])), 0, cos(radians(extrinsic[4]))]])
-        # Mkp = np.matrix([[cos(radians(extrinsic[5])), sin(radians(extrinsic[5])), 0], [-sin(radians(extrinsic[5])), cos(radians(extrinsic[5])), 0], [0, 0, 1]])
-        # rotMat = (Mkp * Mph * Mom).getA().flatten()
-        # self.affineMatrix=np.concatenate((rotMat[0:3],[extrinsic[0]],rotMat[3:7],[extrinsic[1]],rotMat[7:9],[extrinsic[2]],[0],[0],[0],[1]))
-        # self.affineMatrixString = ' '.join([str(elem) for elem in self.affineMatrix])
+        # Matrix for scipy
+        #self.rotMat2=R.from_rotvec([radians(extrinsic[3]),radians(extrinsic[4]),radians(extrinsic[5])])
+
+        #Matrix for pdal pipeline
+        Mom = np.matrix([[1, 0, 0], [0, cos(radians(extrinsic[3])), sin(radians(extrinsic[3]))], [0, -sin(radians(extrinsic[3])), cos(radians(extrinsic[3]))]])
+        Mph = np.matrix([[cos(radians(extrinsic[4])), 0, -sin(radians(extrinsic[4]))], [0, 1, 0], [sin(radians(extrinsic[4])), 0, cos(radians(extrinsic[4]))]])
+        Mkp = np.matrix([[cos(radians(extrinsic[5])), sin(radians(extrinsic[5])), 0], [-sin(radians(extrinsic[5])), cos(radians(extrinsic[5])), 0], [0, 0, 1]])
+        rotMat = (Mkp * Mph * Mom).getA().flatten()
+        self.affineMatrix=np.concatenate((rotMat[0:3],[extrinsic[0]],rotMat[3:7],[extrinsic[1]],rotMat[7:9],[extrinsic[2]],[0],[0],[0],[1]))
+        self.affineMatrixString = ' '.join([str(elem) for elem in self.affineMatrix])
 
 
     def extractDatafrombin(self, corners = [0.75,1.25,-0.25,0.25]):
