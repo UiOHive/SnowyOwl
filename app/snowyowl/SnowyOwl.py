@@ -4,7 +4,7 @@ import time, os, sys
 import numpy as np
 from laspy.file import File as lasFile
 from math import sin, cos, radians
-
+import pdal
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -38,43 +38,26 @@ class SnowyOwl():
         listtmpfiles = os.listdir(self.outfolder + "tmp/")
         for f in range(0,len(listtmpfiles)):
             opl.convertBin2LAS(self.outfolder + "tmp/" + listtmpfiles[f], deleteBin=True)
-            inFile = lasFile(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', mode='r')
-            # extract points
-            coords = np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
-            # transpose using external orientation.
-            coordsRotated=rotMat2.apply(coords)
-            fig = plt.figure()
-            ax = Axes3D(fig)
-            ax.scatter(coords[1:10000, 0], coords[1:10000, 1], coords[1:10000, 2])
-
-            fig = plt.figure()
-            ax = Axes3D(fig)
-            ax.scatter(coordsRotated[1:10000, 0], coordsRotated[1:10000, 1], coordsRotated[1:10000, 2])
-
-
-            #
-            #
-            #
-            # # Tranform cloud accoring to extrinsics
-            # # create pdal transormation JSON
-            # json = """
-            # [
-            #     """ + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """.las",
-            #     {
-            #         "type":"filters.transformation",
-            #         "matrix":" """ + self.affineMatrixString + """"
-            #     },
-            #     {
-            #         "type":"writers.las",
-            #         "filename":""" + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """_transformed.las"
-            #     }
-            # ]
-            # """
-            # pipeline = pdal.Pipeline(json)
-            # count = pipeline.execute()
-            # arrays = pipeline.arrays
-            # metadata = pipeline.metadata
-            # log = pipeline.log
+            # Tranform cloud accoring to extrinsics
+            # create pdal transormation JSON
+            json = """
+            [
+                """ + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """.las",
+                {
+                    "type":"filters.transformation",
+                    "matrix":" """ + self.affineMatrixString + """"
+                },
+                {
+                    "type":"writers.las",
+                    "filename":""" + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """_transformed.las"
+                }
+            ]
+            """
+            pipeline = pdal.Pipeline(json)
+            count = pipeline.execute()
+            arrays = pipeline.arrays
+            metadata = pipeline.metadata
+            log = pipeline.log
             #
             # # use CloudCompareto rotate the Cloud of the appropriate value
             # commandRotate = 'cloudcompare.CloudCompare -SILENT -o '+ self.outfolder + "tmp/" + listtmpfiles[f] + '.las -APPLY_TRANS CCTransform.txt'
@@ -117,3 +100,17 @@ class SnowyOwl():
 # # set the sensor's extrinsic parameters to specific values
 # # (*** IMPORTANT: does not affect raw point cloud data stream, seems to only be used in Livox-Viewer? ***)
 # sensor.setExtrinsicTo(x, y, z, roll, pitch, yaw)
+
+### Code for use with scipy
+            # inFile = lasFile(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', mode='r')
+            # # extract points
+            # coords = np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
+            # # transpose using external orientation.
+            # coordsRotated=rotMat2.apply(coords)
+            # fig = plt.figure()
+            # ax = Axes3D(fig)
+            # ax.scatter(coords[1:10000, 0], coords[1:10000, 1], coords[1:10000, 2])
+            #
+            # fig = plt.figure()
+            # ax = Axes3D(fig)
+            # ax.scatter(coordsRotated[1:10000, 0], coordsRotated[1:10000, 1], coordsRotated[1:10000, 2])
