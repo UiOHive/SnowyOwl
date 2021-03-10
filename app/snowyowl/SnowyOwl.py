@@ -37,7 +37,7 @@ class SnowyOwl():
         self.affineMatrixString = ' '.join([str(elem) for elem in self.affineMatrix])
 
 
-    def extractDatafrombin(self, corners = [0.75,1.25,-0.25,0.25]):
+    def extractDatafrombin(self, corners = [-0.5,0.5,-0.5,0.5], GSD=0.1):
         '''
         :param corners: [x_min,x_max,y_min,y_max] of the cropped area to keep all point for
         :return:
@@ -68,7 +68,7 @@ class SnowyOwl():
             arrays = pipeline.arrays
             metadata = pipeline.metadata
             log = pipeline.log
-            
+            print(log)
             # Extract region of interest from cloud
             # create pdal transormation JSON
             json = """
@@ -76,7 +76,7 @@ class SnowyOwl():
                 """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
                 {
                     "type":"filters.crop",
-                    "bounds":" ([""" + corners[0] + "," + corners[1] + "],[" + corners[2] + "," + corners[3] + """])"
+                    "bounds":" ([""" + str(corners[0]) + "," + str(corners[1]) + "],[" + str(corners[2]) + "," + str(corners[3]) + """])"
                 },
                 {
                     "type":"writers.las",
@@ -89,6 +89,7 @@ class SnowyOwl():
             arrays = pipeline.arrays
             metadata = pipeline.metadata
             log = pipeline.log
+            print(log)
 
             # Extract DEM from cloud
             # create pdal transormation JSON
@@ -99,7 +100,7 @@ class SnowyOwl():
                     "type":"writers.gdal",
                     "gdaldriver":"GTiff",
                     "output_type":"all",
-                    "resolution":"0.1",
+                    "resolution":""" + "\"" + str(GSD) + """",
                     "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """.tif"
                 }
             ]
@@ -109,6 +110,7 @@ class SnowyOwl():
             arrays = pipeline.arrays
             metadata = pipeline.metadata
             log = pipeline.log
+            print(log)
 
             #
             # # use CloudCompareto rotate the Cloud of the appropriate value
