@@ -7,4 +7,5 @@ The processing is in 3 parts :
 * Apply a 6 parameter transformation (rotation and translations) to georeference the output, or at the very least set the vertical upwards
 * Export a DEM from the data and crop a region of interest where the whole cloud is to be saved.
 
-The Rasberry and the processing laptops have enough drive space to hold all of the data in their final state 
+The Rasberry and the processing laptops have enough drive space to hold all of the data in their final state (for the device). The Pi uses scp to transfer the bin to the laptop, then moves the sent files to an archive folder. The laptop uses rsync with a server space to keep the OUTPUT of the processing chain in sync.
+ 
