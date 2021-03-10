@@ -1,1 +1,10 @@
 Python App to run Livox Lidar
+
+SnowyOwl is divided in 2 parts, the acquisition routines that rely on vey little dependencies appart from the OpenPyLIVOX SDK, and the processing routines mostly using PDAL. The aquisition is done on a Raspberry Pi, which then transfers the binary outputs from the LIVOX to a secondary machine running Linux Mint that handles the processing.
+
+The processing is in 3 parts :
+* Convert bin to LAS files using the OpenPyLIVOX
+* Apply a 6 parameter transformation (rotation and translations) to georeference the output, or at the very least set the vertical upwards
+* Export a DEM from the data and crop a region of interest where the whole cloud is to be saved.
+
+The Rasberry and the processing laptops have enough drive space to hold all of the data in their final state 
