@@ -59,7 +59,7 @@ class SnowyOwl():
                 },
                 {
                     "type":"writers.las",
-                    "filename":""" + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """_transformed.las"
+                    "filename":""" + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las"
                 }
             ]
             """
@@ -73,7 +73,7 @@ class SnowyOwl():
             # create pdal transormation JSON
             json = """
             [
-                """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
+                """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
                 {
                     "type":"filters.crop",
                     "bounds":" ([""" + corners[0] + "," + corners[1] + "],[" + corners[2] + "," + corners[3] + """])"
@@ -94,14 +94,13 @@ class SnowyOwl():
             # create pdal transormation JSON
             json = """
             [
-                """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
+                """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
                 {
-                    "type":"filters.crop",
-                    "bounds":" ([""" + corners[0] + "," + corners[1] + "],[" + corners[2] + "," + corners[3] + """])"
-                },
-                {
-                    "type":"writers.las",
-                    "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """_cropped.las"
+                    "type":"writers.gdal",
+                    "gdaldriver":"GTiff",
+                    "output_type":"all",
+                    "resolution":"0.1",
+                    "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """.tif"
                 }
             ]
             """
