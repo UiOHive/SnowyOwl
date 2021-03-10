@@ -20,11 +20,11 @@ class SnowyOwl():
         '''
 
         self.outfolder = outfolder
-        os.makedirs(self.outfolder)
-        os.makedirs(self.outfolder + 'tmp/')
-        os.makedirs(self.outfolder + 'las_raw')
-        os.makedirs(self.outfolder + 'las_referenced')
-        os.makedirs(self.outfolder + 'OUTPUT')
+        os.makedirs(self.outfolder, exist_ok=True)
+        os.makedirs(self.outfolder + 'tmp/', exist_ok=True)
+        os.makedirs(self.outfolder + 'las_raw', exist_ok=True)
+        os.makedirs(self.outfolder + 'las_referenced', exist_ok=True)
+        os.makedirs(self.outfolder + 'OUTPUT', exist_ok=True)
         # Matrix for scipy
         #self.rotMat2=R.from_rotvec([radians(extrinsic[3]),radians(extrinsic[4]),radians(extrinsic[5])])
 
