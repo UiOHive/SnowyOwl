@@ -7,7 +7,8 @@ snowyOwl.egg-info/SOURCES.txt
 snowyOwl.egg-info/dependency_links.txt
 snowyOwl.egg-info/requires.txt
 snowyOwl.egg-info/top_level.txt
-snowyowl/SnowOwlAcquisition.py
 snowyowl/SnowyOwl.py
-snowyowl/SnowyOwl_example.py
+snowyowl/SnowyOwlAcquisition.py
+snowyowl/SnowyOwl_exampleAcquisition.py
+snowyowl/SnowyOwl_exampleProcessing.py
 snowyowl/__init__.py

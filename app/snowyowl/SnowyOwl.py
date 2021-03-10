@@ -20,6 +20,11 @@ class SnowyOwl():
         '''
 
         self.outfolder = outfolder
+        os.makedirs(self.outfolder)
+        os.makedirs(self.outfolder + 'tmp/')
+        os.makedirs(self.outfolder + 'las_raw')
+        os.makedirs(self.outfolder + 'las_referenced')
+        os.makedirs(self.outfolder + 'OUTPUT')
         # Matrix for scipy
         #self.rotMat2=R.from_rotvec([radians(extrinsic[3]),radians(extrinsic[4]),radians(extrinsic[5])])
 
@@ -40,18 +45,62 @@ class SnowyOwl():
         listtmpfiles = os.listdir(self.outfolder + "tmp/")
         for f in range(0,len(listtmpfiles)):
             opl.convertBin2LAS(self.outfolder + "tmp/" + listtmpfiles[f], deleteBin=True)
+            # Move converted las to las_raw folder
+            os.rename(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
             # Tranform cloud accoring to extrinsics
             # create pdal transormation JSON
             json = """
             [
-                """ + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """.las",
+                """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
                 {
                     "type":"filters.transformation",
                     "matrix":" """ + self.affineMatrixString + """"
                 },
                 {
                     "type":"writers.las",
-                    "filename":""" + "\"" + self.outfolder + "tmp/" +  listtmpfiles[f] + """_transformed.las"
+                    "filename":""" + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """_transformed.las"
+                }
+            ]
+            """
+            pipeline = pdal.Pipeline(json)
+            count = pipeline.execute()
+            arrays = pipeline.arrays
+            metadata = pipeline.metadata
+            log = pipeline.log
+            
+            # Extract region of interest from cloud
+            # create pdal transormation JSON
+            json = """
+            [
+                """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
+                {
+                    "type":"filters.crop",
+                    "bounds":" ([""" + corners[0] + "," + corners[1] + "],[" + corners[2] + "," + corners[3] + """])"
+                },
+                {
+                    "type":"writers.las",
+                    "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """_transformed.las"
+                }
+            ]
+            """
+            pipeline = pdal.Pipeline(json)
+            count = pipeline.execute()
+            arrays = pipeline.arrays
+            metadata = pipeline.metadata
+            log = pipeline.log
+
+            # Extract DEM from cloud
+            # create pdal transormation JSON
+            json = """
+            [
+                """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
+                {
+                    "type":"filters.crop",
+                    "bounds":" ([""" + corners[0] + "," + corners[1] + "],[" + corners[2] + "," + corners[3] + """])"
+                },
+                {
+                    "type":"writers.las",
+                    "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """_transformed.las"
                 }
             ]
             """
