@@ -42,6 +42,8 @@ class SnowyOwl():
         :param corners: [x_min,x_max,y_min,y_max] of the cropped area to keep all point for
         :return:
         '''
+        logging.basicConfig(filename=self.outfolder + 'Processsing.log', level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s : %(message)s')
         listtmpfiles = os.listdir(self.outfolder + "tmp/")
         for f in range(0,len(listtmpfiles)):
             opl.convertBin2LAS(self.outfolder + "tmp/" + listtmpfiles[f], deleteBin=True)
