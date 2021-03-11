@@ -16,6 +16,7 @@ class SnowyOwlAcquisition():
         self.ip_livox = ip_livox
         self.ip_computer = ip_computer
         os.makedirs(self.outfolder + 'tmp', exist_ok=True)
+        os.makedirs(self.outfolder + 'archive', exist_ok=True)
 
     def acquireClouds(self, duration=3.0, duration_between_scans=10, number_of_scans=1):
         # Setup
@@ -66,3 +67,28 @@ class SnowyOwlAcquisition():
         else:
             print("\n***** Could not connect to a Livox sensor *****\n")
             logging.error("Could not connect to a Livox sensor")
+
+    def sendDataToProcessing(self, server='', username='', password='', remote_path=b'~/'):
+
+        logging.basicConfig(filename=self.outfolder + 'SendingToLaptop.log', level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s : %(message)s')
+        # Continuously check if there's new files to be sent
+        while True:
+            ssh = SSHClient()
+            ssh.load_system_host_keys()
+            ssh.connect(server)
+
+            # SCPCLient takes a paramiko transport as an argument
+            scp = SCPClient(ssh.get_transport())
+
+            listtmpfiles = os.listdir(self.outfolder + "tmp/")
+            for f in range(0, len(listtmpfiles)):
+                # Send file to server
+                scp.put(listtmpfiles[f], remote_path=remote_path)
+                # Move converted las to las_raw folder
+                os.rename(self.outfolder + "tmp/" + listtmpfiles[f],
+                          self.outfolder + 'archive/' + listtmpfiles[f])
+                logging.info("Sent file: " + listtmpfiles[f])
+
+            scp.close()
+            time.sleep(10)
