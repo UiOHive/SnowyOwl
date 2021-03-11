@@ -9,6 +9,8 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import logging
+from paramiko import SSHClient
+from scp import SCPClient
 
 class SnowyOwl():
     def __init__(self, outfolder="/home/", extrinsic=[0,0,0,0,0,0]):
@@ -22,10 +24,11 @@ class SnowyOwl():
 
         self.outfolder = outfolder
         os.makedirs(self.outfolder, exist_ok=True)
-        os.makedirs(self.outfolder + 'bin/', exist_ok=True)
+        os.makedirs(self.outfolder + 'bin', exist_ok=True)
         os.makedirs(self.outfolder + 'las_raw', exist_ok=True)
         os.makedirs(self.outfolder + 'las_referenced', exist_ok=True)
         os.makedirs(self.outfolder + 'OUTPUT', exist_ok=True)
+        os.makedirs(self.outfolder + 'SENT', exist_ok=True)
         # Matrix for scipy
         #self.rotMat2=R.from_rotvec([radians(extrinsic[3]),radians(extrinsic[4]),radians(extrinsic[5])])
 
@@ -47,70 +50,98 @@ class SnowyOwl():
                             format='%(asctime)s - %(levelname)s : %(message)s')
         listtmpfiles = os.listdir(self.outfolder + "bin/")
         for f in range(0,len(listtmpfiles)):
-            opl.convertBin2LAS(self.outfolder + "bin/" + listtmpfiles[f], deleteBin=True)
-            # Move converted las to las_raw folder
-            os.rename(self.outfolder + "bin/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
+            try:
+                opl.convertBin2LAS(self.outfolder + "bin/" + listtmpfiles[f], deleteBin=True)
+                # Move converted las to las_raw folder
+                os.rename(self.outfolder + "bin/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
 
-            # Tranform cloud accoring to extrinsics
-            # create pdal transormation JSON
-            json = """
-            [
-                """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
-                {
-                    "type":"filters.transformation",
-                    "matrix":" """ + self.affineMatrixString + """"
-                },
-                {
-                    "type":"writers.las",
-                    "filename":""" + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las"
-                }
-            ]
-            """
-            pipeline = pdal.Pipeline(json)
-            count = pipeline.execute()
-            #arrays = pipeline.arrays
-            #metadata = pipeline.metadata
-            #log = pipeline.log
+                # Tranform cloud accoring to extrinsics
+                # create pdal transormation JSON
+                json = """
+                [
+                    """ + "\"" + self.outfolder + "las_raw/" +  listtmpfiles[f] + """.las",
+                    {
+                        "type":"filters.transformation",
+                        "matrix":" """ + self.affineMatrixString + """"
+                    },
+                    {
+                        "type":"writers.las",
+                        "filename":""" + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las"
+                    }
+                ]
+                """
+                pipeline = pdal.Pipeline(json)
+                count = pipeline.execute()
+                #arrays = pipeline.arrays
+                #metadata = pipeline.metadata
+                #log = pipeline.log
 
-            # Extract region of interest from cloud
-            # create pdal transormation JSON
-            json = """
-            [
-                """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
-                {
-                    "type":"filters.crop",
-                    "bounds":" ([""" + str(corners[0]) + "," + str(corners[1]) + "],[" + str(corners[2]) + "," + str(corners[3]) + """])"
-                },
-                {
-                    "type":"writers.las",
-                    "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """_cropped.las"
-                }
-            ]
-            """
-            pipeline = pdal.Pipeline(json)
-            count = pipeline.execute()
-            #arrays = pipeline.arrays
-            #metadata = pipeline.metadata
-            #log = pipeline.log
+                # Extract region of interest from cloud
+                # create pdal transormation JSON
+                json = """
+                [
+                    """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
+                    {
+                        "type":"filters.crop",
+                        "bounds":" ([""" + str(corners[0]) + "," + str(corners[1]) + "],[" + str(corners[2]) + "," + str(corners[3]) + """])"
+                    },
+                    {
+                        "type":"writers.las",
+                        "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """_cropped.las"
+                    }
+                ]
+                """
+                pipeline = pdal.Pipeline(json)
+                count = pipeline.execute()
+                #arrays = pipeline.arrays
+                #metadata = pipeline.metadata
+                #log = pipeline.log
 
-            # Extract DEM from cloud
-            # create pdal transormation JSON
-            json = """
-            [
-                """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
-                {
-                    "type":"writers.gdal",
-                    "gdaldriver":"GTiff",
-                    "output_type":"all",
-                    "resolution":""" + "\"" + str(GSD) + """",
-                    "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """.tif"
-                }
-            ]
-            """
-            pipeline = pdal.Pipeline(json)
-            count = pipeline.execute()
-            #arrays = pipeline.arrays
-            #metadata = pipeline.metadata
-            #log = pipeline.log
+                # Extract DEM from cloud
+                # create pdal transormation JSON
+                json = """
+                [
+                    """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
+                    {
+                        "type":"writers.gdal",
+                        "gdaldriver":"GTiff",
+                        "output_type":"all",
+                        "resolution":""" + "\"" + str(GSD) + """",
+                        "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """.tif"
+                    }
+                ]
+                """
+                pipeline = pdal.Pipeline(json)
+                count = pipeline.execute()
+                #arrays = pipeline.arrays
+                #metadata = pipeline.metadata
+                #log = pipeline.log
 
-            logging.info("Processed file : " + listtmpfiles[f])
+                logging.info("Processed file : " + listtmpfiles[f])
+            except:
+                logging.warning("Processing chain didn't work for file: " + listtmpfiles[f])
+
+    def sendDataToServer(self, server='', username='', password='', remote_path=b'~/'):
+
+        logging.basicConfig(filename=self.outfolder + 'SendingToServer.log', level=logging.DEBUG,
+                            format='%(asctime)s - %(levelname)s : %(message)s')
+        # Continuously check if there's new files to be sent
+        while True:
+            ssh = SSHClient()
+            ssh.load_system_host_keys()
+            ssh.connect(server)
+
+            # SCPCLient takes a paramiko transport as an argument
+            scp = SCPClient(ssh.get_transport())
+
+            listtmpfiles = os.listdir(self.outfolder + "OUTPUT/")
+            for f in range(0, len(listtmpfiles)):
+                # Send file to server
+                scp.put(listtmpfiles[f], remote_path=remote_path)
+                # Move converted las to las_raw folder
+                os.rename(self.outfolder + "OUTPUT/" + listtmpfiles[f],
+                          self.outfolder + 'SENT/' + listtmpfiles[f])
+                logging.info("Sent file: " + listtmpfiles[f])
+
+            scp.close()
+            time.sleep(10)
