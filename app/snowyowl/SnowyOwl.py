@@ -8,9 +8,10 @@ import pdal
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import logging
 
 class SnowyOwl():
-    def __init__(self, outfolder="/home/luc/data/LIVOX/", extrinsic=[0,0,0,0,0,0]):
+    def __init__(self, outfolder="/home/", extrinsic=[0,0,0,0,0,0]):
         '''
         outFolder: location of output
         LIVOX_IP: IP address of LIVOX sensor (typically 198.168.1.1XX, with XX the last numbers of serial number)
@@ -21,7 +22,7 @@ class SnowyOwl():
 
         self.outfolder = outfolder
         os.makedirs(self.outfolder, exist_ok=True)
-        os.makedirs(self.outfolder + 'tmp/', exist_ok=True)
+        os.makedirs(self.outfolder + 'bin/', exist_ok=True)
         os.makedirs(self.outfolder + 'las_raw', exist_ok=True)
         os.makedirs(self.outfolder + 'las_referenced', exist_ok=True)
         os.makedirs(self.outfolder + 'OUTPUT', exist_ok=True)
@@ -44,11 +45,11 @@ class SnowyOwl():
         '''
         logging.basicConfig(filename=self.outfolder + 'Processsing.log', level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s : %(message)s')
-        listtmpfiles = os.listdir(self.outfolder + "tmp/")
+        listtmpfiles = os.listdir(self.outfolder + "bin/")
         for f in range(0,len(listtmpfiles)):
-            opl.convertBin2LAS(self.outfolder + "tmp/" + listtmpfiles[f], deleteBin=True)
+            opl.convertBin2LAS(self.outfolder + "bin/" + listtmpfiles[f], deleteBin=True)
             # Move converted las to las_raw folder
-            os.rename(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
+            os.rename(self.outfolder + "bin/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
 
             # Tranform cloud accoring to extrinsics
             # create pdal transormation JSON
@@ -67,10 +68,10 @@ class SnowyOwl():
             """
             pipeline = pdal.Pipeline(json)
             count = pipeline.execute()
-            arrays = pipeline.arrays
-            metadata = pipeline.metadata
-            log = pipeline.log
-            print(log)
+            #arrays = pipeline.arrays
+            #metadata = pipeline.metadata
+            #log = pipeline.log
+
             # Extract region of interest from cloud
             # create pdal transormation JSON
             json = """
@@ -88,10 +89,9 @@ class SnowyOwl():
             """
             pipeline = pdal.Pipeline(json)
             count = pipeline.execute()
-            arrays = pipeline.arrays
-            metadata = pipeline.metadata
-            log = pipeline.log
-            print(log)
+            #arrays = pipeline.arrays
+            #metadata = pipeline.metadata
+            #log = pipeline.log
 
             # Extract DEM from cloud
             # create pdal transormation JSON
@@ -109,64 +109,8 @@ class SnowyOwl():
             """
             pipeline = pdal.Pipeline(json)
             count = pipeline.execute()
-            arrays = pipeline.arrays
-            metadata = pipeline.metadata
-            log = pipeline.log
-            print(log)
+            #arrays = pipeline.arrays
+            #metadata = pipeline.metadata
+            #log = pipeline.log
 
-            #
-            # # use CloudCompareto rotate the Cloud of the appropriate value
-            # commandRotate = 'cloudcompare.CloudCompare -SILENT -o '+ self.outfolder + "tmp/" + listtmpfiles[f] + '.las -APPLY_TRANS CCTransform.txt'
-            # print(commandRotate)
-            # os.system(commandRotate)
-            # # make DEM from Cloud
-            # commandRaster='cloudcompare.CloudCompare -SILENT -o -RASTERIZE -GRID_STEP 0.1 -PROJ MIN -OUTPUT_RASTER_Z'
-            # print(commandRaster)
-            # os.system(commandRaster)
-            #
-            #
-            # inFile = lasFile(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', mode='r')
-            # # extract points
-            # coords= inFile.points  #= np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
-            # # transpose using external orientation.
-            # for i in range(len(inFile.x)):
-            #     newcoord=self.rotMat * np.matrix([[coords[i,0] - self.sensorPos[0]], [coords[i,1] - self.sensorPos[1]], [coords[i,2] - self.sensorPos[2]]])
-            #     coords[i] = newcoord.getA()
-            # # create filter to remove points out of square of interest
-            # filter = np.logical_and(np.logical_and(coords[:,0] >= corners[0],coords[:,0] <= corners[1]),np.logical_and(coords[:,1] >= corners[2],coords[:,1] <= corners[3]))
-            #
-            # # Grab an array of all points which meet this threshold
-            # points_kept = inFile.points[filter]
-            # outFile = lasFile(self.outfolder + listtmpfiles[f] + '.las', mode="w",header=inFile.header)
-            # outFile.points = points_kept
-            # outFile.close()
-            #
-            # # move output out of tmp folder
-            # os.rename(self.outfolder + "tmp/" + listtmpfiles[i] + '.las', self.outfolder + listtmpfiles[i] + '.las')
-            #
-            #
-
-# x = 0  # units of meters
-# y = 0  # units of meters
-# z = 0  # units of meters
-# roll = 0  # units of degrees
-# pitch = 60  # units of degrees
-# yaw = 0  # units of degrees
-#
-# # set the sensor's extrinsic parameters to specific values
-# # (*** IMPORTANT: does not affect raw point cloud data stream, seems to only be used in Livox-Viewer? ***)
-# sensor.setExtrinsicTo(x, y, z, roll, pitch, yaw)
-
-### Code for use with scipy
-            # inFile = lasFile(self.outfolder + "tmp/" + listtmpfiles[f] + '.las', mode='r')
-            # # extract points
-            # coords = np.vstack((inFile.x, inFile.y, inFile.z)).transpose()
-            # # transpose using external orientation.
-            # coordsRotated=rotMat2.apply(coords)
-            # fig = plt.figure()
-            # ax = Axes3D(fig)
-            # ax.scatter(coords[1:10000, 0], coords[1:10000, 1], coords[1:10000, 2])
-            #
-            # fig = plt.figure()
-            # ax = Axes3D(fig)
-            # ax.scatter(coordsRotated[1:10000, 0], coordsRotated[1:10000, 1], coordsRotated[1:10000, 2])
+            logging.info("Processed file : " + listtmpfiles[f])
