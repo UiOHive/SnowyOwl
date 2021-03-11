@@ -1,0 +1,9 @@
+[Unit]
+Description=Send acquiered point clouds from Rasberry to processing machine
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/data/LIVOX/Raspberry2Laptop.py
+
+[Install]
+WantedBy=network.target

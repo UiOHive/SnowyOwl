@@ -16,9 +16,7 @@ class SnowyOwlAcquisition():
         self.ip_livox = ip_livox
         self.ip_computer = ip_computer
 
-
-
-    def acquiereNCloud(self, duration=3.0, number_of_scans=1, duration_between_scans=10):
+    def acquireClouds(self, duration=3.0, duration_between_scans=10, number_of_scans=1):
         # Setup
         # duration : integration time for the lidar in seconds (default = 3s)
         # number_of_scans : number of consecutive scans to be made (default = 1, set to 0for infinity)
@@ -43,9 +41,13 @@ class SnowyOwlAcquisition():
             i=1
             while (i<=number_of_scans or number_of_scans==0):
                 try:
+                    # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
+                    # as it would drift, giving data points not neatly spread
+                    while not (datetime.utcnow().second % (duration + duration_between_scans) == 0):
+                        sleep(0.5)
+                    filename = self.outfolder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
                     # start data stream (real-time writing of point cloud data to a BINARY file)
                     sensor.dataStart_RT_B()
-                    filename = self.outfolder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
                     secsToWait = 0  # seconds, time delayed data capture start
                     # (*** IMPORTANT: this command starts a new thread, so the current program (thread) needs to exist for the 'duration' ***)
                     # capture the data stream and save it to a file (if applicable, IMU data stream will also be saved to a file)
@@ -54,7 +56,6 @@ class SnowyOwlAcquisition():
                         if sensor.doneCapturing():
                             break
                     sensor.dataStop()
-                    time.sleep(duration_between_scans)
                     logging.info("Cloud acquiered with name" + filename)
                     # increment counter
                     i=i+1
@@ -62,10 +63,7 @@ class SnowyOwlAcquisition():
                     logging.warning("Data acquisition failed")
                     sensor.disconnect()
                     connected = False
-                    while connected:
-                        connected = sensor.connect(self.ip_computer, self.ip_livox, 60001, 50001, 40001)
-            # if you want to put the lidar in stand-by mode, not sure exactly what this does, lidar still spins?
-            # sensor.lidarStandBy()
+
             # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
             sensor.lidarSpinDown()
             sensor.disconnect()
