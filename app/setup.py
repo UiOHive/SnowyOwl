@@ -48,7 +48,7 @@ setup(
     packages=find_packages(),
 
 
-    install_requires=['matplotlib', 'pandas', 'numpy','laspy', 'scipy'],
+    install_requires=['numpy','laspy', 'scipy'],
     include_package_data=True
 
 )
