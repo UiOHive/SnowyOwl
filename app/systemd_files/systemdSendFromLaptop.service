@@ -1,9 +1,0 @@
-[Unit]
-Description=Send processed data
-After=network.target
-
-[Service]
-ExecStart=/usr/bin/bash home/snowyowl/git/SnowyOwl/app/run_files/SnowyOwlSendingProcessedFiles_Finse.sh
-
-[Install]
-WantedBy=network.target

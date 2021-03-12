@@ -1,9 +1,0 @@
-[Unit]
-Description=Process LiDAR data
-After=network.target
-
-[Service]
-ExecStart=/usr/bin/bash /home/snowyowl/git/SnowyOwl/app/systemd_files/SnowyOwlProcessing_Finse.sh
-
-[Install]
-WantedBy=network.target
