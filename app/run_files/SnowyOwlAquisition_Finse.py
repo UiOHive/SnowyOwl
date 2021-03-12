@@ -10,6 +10,6 @@ elif getpass.getuser()=='snowyowl':
     outfolder="/home/snowyowl/data/LivoxDirect/"
 
 
-testA=SOA.SnowyOwlAcquisition(outfolder=outfolder, ip_livox="192.168.1.104", ip_computer=ip_computer)
+testA=SOA.SnowyOwlAcquisition(outfolder=outfolder, ip_livox="192.168.13.104", ip_computer=ip_computer)
 testA.acquireClouds(number_of_scans=0,duration_between_scans=10, duration=10)
 
