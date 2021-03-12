@@ -115,6 +115,8 @@ class SnowyOwl():
                     #log = pipeline.log
 
                 logging.info("Processed file : " + listtmpfiles[f])
+                os.remove(self.outfolder + "las_raw/" +  listtmpfiles[f] + ".las")
+                os.remove(self.outfolder + "las_referenced/" +  listtmpfiles[f] + ".las")
             except:
                 logging.warning("Processing chain didn't work for file: " + listtmpfiles[f])
 
