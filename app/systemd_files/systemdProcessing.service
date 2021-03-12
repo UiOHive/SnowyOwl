@@ -3,7 +3,7 @@ Description=Process LiDAR data
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/data/LIVOX/SnowyOwlProcessing_Finse.py
+ExecStart=/usr/bin/bash /home/data/LIVOX/SnowyOwlProcessing_Finse.sh
 
 [Install]
 WantedBy=network.target

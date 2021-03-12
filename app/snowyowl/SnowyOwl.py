@@ -1,14 +1,10 @@
 import openpylivox as opl
 from datetime import datetime
-import time, os, sys
+import time, os, sys, logging
 import numpy as np
 from laspy.file import File as lasFile
 from math import sin, cos, radians
 import pdal
-from scipy.spatial.transform import Rotation as R
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import logging
 from paramiko import SSHClient
 from scp import SCPClient
 
@@ -97,25 +93,26 @@ class SnowyOwl():
                 #metadata = pipeline.metadata
                 #log = pipeline.log
 
-                # Extract DEM from cloud
-                # create pdal transormation JSON
-                json = """
-                [
-                    """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
-                    {
-                        "type":"writers.gdal",
-                        "gdaldriver":"GTiff",
-                        "output_type":"all",
-                        "resolution":""" + "\"" + str(GSD) + """",
-                        "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """.tif"
-                    }
-                ]
-                """
-                pipeline = pdal.Pipeline(json)
-                count = pipeline.execute()
-                #arrays = pipeline.arrays
-                #metadata = pipeline.metadata
-                #log = pipeline.log
+                # Extract DEM from cloud every minute (when file name has seconds < 10 , should be 0 but just in case)
+                if int(listtmpfiles[f][17:19]) < 10:
+                    # create pdal transormation JSON
+                    json = """
+                    [
+                        """ + "\"" + self.outfolder + "las_referenced/" +  listtmpfiles[f] + """.las",
+                        {
+                            "type":"writers.gdal",
+                            "gdaldriver":"GTiff",
+                            "output_type":"all",
+                            "resolution":""" + "\"" + str(GSD) + """",
+                            "filename":""" + "\"" + self.outfolder + "OUTPUT/" +  listtmpfiles[f] + """.tif"
+                        }
+                    ]
+                    """
+                    pipeline = pdal.Pipeline(json)
+                    count = pipeline.execute()
+                    #arrays = pipeline.arrays
+                    #metadata = pipeline.metadata
+                    #log = pipeline.log
 
                 logging.info("Processed file : " + listtmpfiles[f])
             except:
