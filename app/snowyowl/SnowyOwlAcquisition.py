@@ -1,6 +1,8 @@
 import openpylivox as opl
 from datetime import datetime
 import time, os, sys, logging
+#from paramiko import SSHClient
+#from scp import SCPClient
 
 class SnowyOwlAcquisition():
     def __init__(self, outfolder="/home/", ip_livox="192.168.1.104", ip_computer="192.168.1.2"):
@@ -26,7 +28,7 @@ class SnowyOwlAcquisition():
         logging.basicConfig(filename=self.outfolder + 'Acquisition.log', level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s : %(message)s')
         sensor = opl.openpylivox(True)
-        connected = sensor.connect(self.ip_computer, self.ip_livox, 60001, 50001, 40001)
+        connected = sensor.auto_connect(self.ip_computer)
         if connected:
             logging.info("Connection to LIVOX successful")
             sensor.setExtrinsicToZero()
