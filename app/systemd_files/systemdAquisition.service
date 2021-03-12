@@ -3,7 +3,7 @@ Description=Acquire LiDAR data
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/data/LIVOX/SnowyOwlAquisition_Finse.py
+ExecStart=/usr/bin/bash /home/livoxpi/git/SnowyOwl/app/systemd_Files/systemdAquisition.sh
 
 [Install]
 WantedBy=network.target
