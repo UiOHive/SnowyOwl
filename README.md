@@ -34,7 +34,7 @@ All hardware design available in the folder `hardware`, and and Python App in `a
       - [ ] possibility to adjust Aquisition on the fly (via config)
     - [ ] create a single config file for the whole stack and use [configparser](https://docs.python.org/3/library/configparser.html)
     - [ ] configure SSH to Vann or to Latice server directly
-    - [ ] solve disconnect problem Pi to Livox
+    - [ ] solve disconnect problem Pi to Livox (breaks after 2hrs)
     - [ ] define accurately the rotation matirx to apply. Crop z-range for potential crazy outliers
     - [ ] refine data to produce:
       - [ ] 10 minute DEM -> store in netcdf file if possible (with xarray)
