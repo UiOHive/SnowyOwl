@@ -29,7 +29,7 @@ class SnowyOwlAcquisition():
                             format='%(asctime)s - %(levelname)s : %(message)s')
         scansperhour=3600/(duration+duration_between_scans)
         nbScansDoneTotal=0
-        while True and (nbScansDoneTotal<number_of_scans or number_of_scans==0):
+        while (nbScansDoneTotal<number_of_scans or number_of_scans==0):
             nbScansDoneThisRound=0
             sensor = opl.openpylivox(True)
             connected = sensor.auto_connect(self.ip_computer)
