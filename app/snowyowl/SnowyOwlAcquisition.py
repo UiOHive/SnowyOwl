@@ -23,49 +23,53 @@ class SnowyOwlAcquisition():
     def acquireClouds(self, duration=3.0, duration_between_scans=10, number_of_scans=1):
         # Setup
         # duration : integration time for the lidar in seconds (default = 3s)
-        # number_of_scans : number of consecutive scans to be made (default = 1, set to 0for infinity)
+        # number_of_scans : number of consecutive scans to be made (default = 1, set to 0 for infinity, in which casse the script will disconnect and startagain every hour)
         # duration_between_scans : cooldown between acquisitions in seconds (default=10)
         logging.basicConfig(filename=self.outfolder + 'Acquisition.log', level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s : %(message)s')
-        sensor = opl.openpylivox(True)
-        connected = sensor.auto_connect(self.ip_computer)
-        if connected:
-            logging.info("Connection to LIVOX successful")
-            sensor.setExtrinsicToZero()
+        scansperhour=np.floor(3600/(duration+duration_between_scans))
+        nbScansDoneTotal=0
+        while True and (nbScansDoneTotal<number_of_scans or number_of_scans==0):
+            nbScansDoneThisRound=0
+            sensor = opl.openpylivox(True)
+            connected = sensor.auto_connect(self.ip_computer)
+            if connected:
+                logging.info("Connection to LIVOX successful")
+                sensor.setExtrinsicToZero()
 
-            # Data Acquisition
-            sensor.lidarSpinUp()
-            # set lidar return mode (0 = single 1st return, 1 = single strongest return, 2 = dual returns)
-            sensor.setLidarReturnMode(2)
-            # activate the IMU data stream (only for Horizon and Tele-15 sensors)
-            sensor.setIMUdataPush(False)
-            # turn on (True) or off (False) rain/fog suppression on the sensor
-            # False here because we are interested in catching snow particules moving through the sensor
-            sensor.setRainFogSuppression(False)
-            i=1
-            while (i<=number_of_scans or number_of_scans==0):
-                # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
-                # as it would drift, giving data points not neatly spread
-                while not (datetime.utcnow().second % (duration + duration_between_scans) == 0):
-                    time.sleep(0.5)
-                filename = self.outfolder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
-                # start data stream (real-time writing of point cloud data to a BINARY file)
-                sensor.dataStart_RT_B()
-                secsToWait = 0  # seconds, time delayed data capture start
-                # (*** IMPORTANT: this command starts a new thread, so the current program (thread) needs to exist for the 'duration' ***)
-                # capture the data stream and save it to a file (if applicable, IMU data stream will also be saved to a file)
-                sensor.saveDataToFile(filename, secsToWait, duration)
-                while True:
-                    if sensor.doneCapturing():
-                        break
-                sensor.dataStop()
-                logging.info("Cloud acquiered with name" + filename)
-                # increment counter
-                i=i+1
-
+                # Data Acquisition
+                sensor.lidarSpinUp()
+                # set lidar return mode (0 = single 1st return, 1 = single strongest return, 2 = dual returns)
+                sensor.setLidarReturnMode(2)
+                # activate the IMU data stream (only for Horizon and Tele-15 sensors)
+                sensor.setIMUdataPush(False)
+                # turn on (True) or off (False) rain/fog suppression on the sensor
+                # False here because we are interested in catching snow particules moving through the sensor
+                sensor.setRainFogSuppression(False)
+                while (nbScansDoneThisRound<scansperhour or nbScansDoneTotal<number_of_scans):
+                    # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
+                    # as it would drift, giving data points not neatly spread
+                    while not (datetime.utcnow().second % (duration + duration_between_scans) == 0):
+                        time.sleep(0.5)
+                    filename = self.outfolder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
+                    # start data stream (real-time writing of point cloud data to a BINARY file)
+                    sensor.dataStart_RT_B()
+                    secsToWait = 0  # seconds, time delayed data capture start
+                    # (*** IMPORTANT: this command starts a new thread, so the current program (thread) needs to exist for the 'duration' ***)
+                    # capture the data stream and save it to a file (if applicable, IMU data stream will also be saved to a file)
+                    sensor.saveDataToFile(filename, secsToWait, duration)
+                    while True:
+                        if sensor.doneCapturing():
+                            break
+                    sensor.dataStop()
+                    logging.info("Cloud acquiered with name" + filename)
+                    # increment counter
+                    nbScansDoneThisRound=nbScansDoneThisRound+1
+                    nbScansDoneTotal = nbScansDoneTotal + 1
             # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
             sensor.lidarSpinDown()
             sensor.disconnect()
+            logging.info("Disconnected from LIVOX because of the 1h limit")
         else:
             print("\n***** Could not connect to a Livox sensor *****\n")
             logging.error("Could not connect to a Livox sensor")
