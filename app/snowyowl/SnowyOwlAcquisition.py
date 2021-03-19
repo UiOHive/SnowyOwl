@@ -27,7 +27,7 @@ class SnowyOwlAcquisition():
         # duration_between_scans : cooldown between acquisitions in seconds (default=10)
         logging.basicConfig(filename=self.outfolder + 'Acquisition.log', level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s : %(message)s')
-        scansperhour=np.floor(3600/(duration+duration_between_scans))
+        scansperhour=3600/(duration+duration_between_scans)
         nbScansDoneTotal=0
         while True and (nbScansDoneTotal<number_of_scans or number_of_scans==0):
             nbScansDoneThisRound=0
