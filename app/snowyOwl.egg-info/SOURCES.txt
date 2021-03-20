@@ -9,6 +9,4 @@ snowyOwl.egg-info/requires.txt
 snowyOwl.egg-info/top_level.txt
 snowyowl/SnowyOwl.py
 snowyowl/SnowyOwlAcquisition.py
-snowyowl/SnowyOwl_exampleAcquisition.py
-snowyowl/SnowyOwl_exampleProcessing.py
 snowyowl/__init__.py
