@@ -52,7 +52,7 @@ class SnowyOwl():
                 # Move converted las to las_raw folder
                 os.rename(self.outfolder + "bin/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
 
-                # Tranform cloud accoring to extrinsics
+                # Tranform cloud according to extrinsics
                 # create pdal transormation JSON
                 json = """
                 [
