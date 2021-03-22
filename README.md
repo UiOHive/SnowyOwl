@@ -18,15 +18,20 @@ All hardware design available in the folder `hardware`, and and Python App in `a
 
 **IMPORTANT:** automatic startup
 
-### Install Environment
+### Install Environments for Acquisition and Processing
 
 #### Acquisition Computer
 After installing Raspbian on microSD follow these steps:
 ```sh
+# Set ssh connection to Processing computer
+ssh-keygen
+ssh-copy-id <user>@<processing_machine>
+
 # Clone SnowyOwl repository
 mkdir github
 cd github
-git clone ...
+git clone https://github.com/ArcticSnow/OpenPyLivox
+git clone https://github.com/UiOHive/SnowyOwl
 cp SnowyOwl/appV2/example_config.ini ~/config.ini
 
 cd
@@ -34,48 +39,69 @@ nano config.ini
 # Add the proper config settings
 
 # Install miniconda
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+~/miniconda3/bin/conda init bash
+
+# create a Python VE
 conda create -n livox_env
 conda activate livox_env
-conda install pandas
-
+conda install pandas ipython
+pip install github/OpenPyLivox
 
 crontab -e
+# add the following line to the Crontab to transfer files every 30 minutes. 
+0,30 * * * * sh github/SnowyOwl/appV2/scp_transfer_file.sh
+# CHECK config in scp_transfer_file.sh
 
-# add the following two lines to the Crontab
+# Create two folders one for temporary storage of data and one for archiving
+mkdir <project_path>/tmp
+mkdir <project_path>/archive
 
-# Set ssh connection to Processing computer
-ssh-keygen
-ssh-copy-id <user>@<processing_machine>
+# setup systemd to launch Python script at startup
+[LUC, CAN YOU ADD HERE??]
 
 # Allow to reboot computer with no password (as connection to lidar is unstable after couple hours)
 # Reboot after each scp file transfer
 sudo visudo -f /etc/sudoers.d/reboot_privilege`
 #add line : 
 <user> ALL=(root) NOPASSWD: /sbin/reboot
-
-# Create two folders one for temporary storage of data and one for archiving
-mkdir <project_path>/tmp
-mkdir <project_path>/archive
 ```
 #### Processing Computer
 ```sh
+
+# Set ssh connection to Processing computer
+ssh-keygen
+ssh-copy-id <user>@<storage_machine>
+
 # Clone SnowyOwl repository
 mkdir github
 cd github
-git clone ...
+git clone https://github.com/UiOHive/SnowyOwl
 cp SnowyOwl/appV2/example_config.ini ~/config.ini
+
+# Install miniconda
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+~/miniconda3/bin/conda init bash
+
+# create a Python VE
+conda create -n proc_env
+conda activate proc_env
+conda install pandas ipython
 
 cd
 nano config.ini
 # Add the proper config settings
 
 crontab -e
-
 # add the following two lines to the Crontab
-
-# Set ssh connection to Processing computer
-ssh-keygen
-ssh-copy-id <user>@<storage_machine>
+* 12 * * * sh github/SnowyOwl/appV2/scp_transfer_file.sh
+0 * * * * /miniconda3/env/proc_env/bin/python /github/SnowyOwl/appV2/process_pcl.py -cf config.ini
 
 # Create two folders one for temporary storage of data and one for archiving
 mkdir <project_path>/las_raw
