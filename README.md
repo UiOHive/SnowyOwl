@@ -20,10 +20,69 @@ All hardware design available in the folder `hardware`, and and Python App in `a
 
 ### Install Environment
 
-- install Raspbian
-- Accept sudo reboot with no psswd :https://stackoverflow.com/questions/35546497/how-to-shutdown-and-then-reboot-linux-machine-using-python-language-or-shell-scr :
-  - sudo visudo -f /etc/sudoers.d/reboot_privilege
-  - add line : <user> ALL=(root) NOPASSWD: /sbin/reboot
+#### Acquisition Computer
+After installing Raspbian on microSD follow these steps:
+```sh
+# Clone SnowyOwl repository
+mkdir github
+cd github
+git clone ...
+cp SnowyOwl/appV2/example_config.ini ~/config.ini
+
+cd
+nano config.ini
+# Add the proper config settings
+
+# Install miniconda
+conda create -n livox_env
+conda activate livox_env
+conda install pandas
+
+
+crontab -e
+
+# add the following two lines to the Crontab
+
+# Set ssh connection to Processing computer
+ssh-keygen
+ssh-copy-id <user>@<processing_machine>
+
+# Allow to reboot computer with no password (as connection to lidar is unstable after couple hours)
+# Reboot after each scp file transfer
+sudo visudo -f /etc/sudoers.d/reboot_privilege`
+#add line : 
+<user> ALL=(root) NOPASSWD: /sbin/reboot
+
+# Create two folders one for temporary storage of data and one for archiving
+mkdir <project_path>/tmp
+mkdir <project_path>/archive
+```
+#### Processing Computer
+```sh
+# Clone SnowyOwl repository
+mkdir github
+cd github
+git clone ...
+cp SnowyOwl/appV2/example_config.ini ~/config.ini
+
+cd
+nano config.ini
+# Add the proper config settings
+
+crontab -e
+
+# add the following two lines to the Crontab
+
+# Set ssh connection to Processing computer
+ssh-keygen
+ssh-copy-id <user>@<storage_machine>
+
+# Create two folders one for temporary storage of data and one for archiving
+mkdir <project_path>/las_raw
+mkdir <project_path>/las_referenced
+mkdir <project_path>/OUTPUT
+mkdir <project_path>/archive
+```
 
 
 ## TODO
