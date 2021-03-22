@@ -21,10 +21,10 @@ All hardware design available in the folder `hardware`, and and Python App in `a
 ### Install Environment
 
 - install Raspbian
-- Accept sudo reboot with noo psswd :https://stackoverflow.com/questions/35546497/how-to-shutdown-and-then-reboot-linux-machine-using-python-language-or-shell-scr :
-sudo visudo -f /etc/sudoers.d/reboot_privilege
-add line :
-<user> ALL=(root) NOPASSWD: /sbin/reboot
+- Accept sudo reboot with no psswd :https://stackoverflow.com/questions/35546497/how-to-shutdown-and-then-reboot-linux-machine-using-python-language-or-shell-scr :
+  - sudo visudo -f /etc/sudoers.d/reboot_privilege
+  - add line : <user> ALL=(root) NOPASSWD: /sbin/reboot
+
 
 ## TODO
 - Luc & Simon: 
