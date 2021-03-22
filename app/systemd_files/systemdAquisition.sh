@@ -1,1 +1,1 @@
-/home/livoxpi/miniconda3/envs/livoxenv/bin/python /home/livoxpi/git/SnowyOwl/app/run_files/SnowyOwlAquisition_Finse.py
+/home/livoxpi/miniconda3/envs/livoxenv/bin/python /home/livoxpi/git/SnowyOwl/appV2/acquisition.py -cf /home/livoxpi/config.ini
