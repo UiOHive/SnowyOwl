@@ -5,8 +5,9 @@ import numpy as np
 from laspy.file import File as lasFile
 from math import sin, cos, radians
 import pdal
-from paramiko import SSHClient
+import paramiko
 from scp import SCPClient
+import glob, shutil
 
 class SnowyOwl():
     def __init__(self, outfolder="/home/", extrinsic=[0,0,0,0,0,0]):
@@ -51,7 +52,7 @@ class SnowyOwl():
                 # Move converted las to las_raw folder
                 os.rename(self.outfolder + "bin/" + listtmpfiles[f] + '.las', self.outfolder + 'las_raw/' + listtmpfiles[f] + '.las')
 
-                # Tranform cloud accoring to extrinsics
+                # Tranform cloud according to extrinsics
                 # create pdal transormation JSON
                 json = """
                 [
@@ -116,31 +117,33 @@ class SnowyOwl():
 
                 logging.info("Processed file : " + listtmpfiles[f])
                 os.remove(self.outfolder + "las_raw/" +  listtmpfiles[f] + ".las")
-                os.remove(self.outfolder + "las_referenced/" +  listtmpfiles[f] + ".las")
+                #os.remove(self.outfolder + "las_referenced/" +  listtmpfiles[f] + ".las")
             except:
                 logging.warning("Processing chain didn't work for file: " + listtmpfiles[f])
 
-    def sendDataToServer(self, server='', username='', password='', remote_path=b'~/'):
+    def sendDataToServer(self, server='', username='', key_file='', remote_path=b'~/'):
 
         logging.basicConfig(filename=self.outfolder + 'SendingToServer.log', level=logging.DEBUG,
                             format='%(asctime)s - %(levelname)s : %(message)s')
         # Continuously check if there's new files to be sent
         while True:
-            ssh = SSHClient()
-            ssh.load_system_host_keys()
-            ssh.connect(server)
+            sshcon = paramiko.SSHClient()
+            sshcon.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            #ssh.load_system_host_keys()
+            sshcon.connect(hostname=server, username=username, key_filename=key_file)
 
             # SCPCLient takes a paramiko transport as an argument
-            scp = SCPClient(ssh.get_transport())
+            scp = SCPClient(sshcon.get_transport())
 
-            listtmpfiles = os.listdir(self.outfolder + "OUTPUT/")
-            for f in range(0, len(listtmpfiles)):
+            list_files = glob.glob(self.outfolder + "OUTPUT/*")
+            for file in list_files:
+                print(file)
                 # Send file to server
-                scp.put(listtmpfiles[f], remote_path=remote_path)
+                scp.put(file, remote_path=remote_path)
                 # Move converted las to las_raw folder
-                os.rename(self.outfolder + "OUTPUT/" + listtmpfiles[f],
-                          self.outfolder + 'SENT/' + listtmpfiles[f])
-                logging.info("Sent file: " + listtmpfiles[f])
+                print(self.outfolder + "SENT/" + file.split('/')[-1])
+                os.rename(file, self.outfolder + "SENT/" + file.split('/')[-1])
+                logging.info("Sent file: " + file)
 
             scp.close()
             time.sleep(10)
