@@ -4,6 +4,8 @@
 CONFIG_FILE=example_config.ini
 TRANSFER="transfer_acq2proc"
 delete_transfered_file=TRUE
+reboot_system=TRUE
+
 
 # Pull information from config_file
 DATA_FOLDER=sed -n "/^\[$TRANSFER\]/ { :l /^send_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE
@@ -29,3 +31,8 @@ do
     mv  $f $ARCHIVE_FOLDER
   fi
 done
+
+if [reboot_system]
+then
+ sudo reboot
+fi
