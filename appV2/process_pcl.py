@@ -173,6 +173,8 @@ if __name__ == "__main__":
     TODO HERE: 
         - add logic here to check folders to move files around exist. Create if not existing
     '''
+
+
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
     rotate_point_clouds(extrinsic=config.getfloat('processing', 'extrinsic'),
                         z_range=config.getfloat('processing', 'z_range'),

@@ -24,6 +24,18 @@ All hardware design available in the folder `hardware`, and and Python App in `a
 
 ## TODO
 - Luc & Simon: 
+  - Python appV2
+    - Acquisisition
+      - TEST code
+      - add logging lines
+      - add logic to check folders exist
+    - Processing:
+      - add logic to check folders exist `/las_raw, /las_referenced, /OUTPUT, ...`
+      - implement pcl processing to DEM with pandas and store as netcdf
+      - add logging lines
+      
+    - File transfer
+      - grab bash script from Pi. See if bash can read config.ini to get settings
   - Python app:
 
     - [ ] reorganize the app to be cleaner

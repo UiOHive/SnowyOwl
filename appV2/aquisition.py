@@ -4,7 +4,8 @@ S. Filhol & L. Girod
 March 2021
 
 TODO:
-- find
+- add in __main__ logic to check if folder structure is good and existing
+- TEST code!
 """
 
 import openpylivox as opl
@@ -85,6 +86,11 @@ if __name__ == "__main__":
                         level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
     logging.info('Reading config.ini file')
+
+    '''
+    TODO HERE: add logic to check if folder structure is good and existing
+    '''
+
     acquire_clouds(scan_duration=config.getint('acquisition', 'scan_duration'),
                    scan_interval=config.getint('acquisition', 'scanning_interval'),
                    nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
