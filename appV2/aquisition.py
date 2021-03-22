@@ -25,27 +25,27 @@ def acquire_clouds(scan_duration=3.0,
     :param scan_duration: duration in second of a scan
     :param scan_interval: time interval in seconds in between to scan
     :param nb_scan_max: maximum number of scan until reconnection, set to 0 for infinite number of scan , in which cases the script will disconnect and start again every hour
+    :param loop_scanning_time: time in s after which the connection to the LIVOX is interupted and started again.
     :param folder: folder to save .bin point clouds
     :param IP_sensor: IP address of the scanner
     :return:
     """
 
-    nb_scan_to_end = loop_scanning_time / scan_interval
-    nb_scan = 0
-
-    sensor = opl.openpylivox(True)
-    connected = sensor.auto_connect(IP_sensor)
-    if connected:
-        logging.info("Connection to LIVOX successful")
-        sensor.setExtrinsicToZero()
-        sensor.lidarSpinUp()                # Data Acquisition
-        sensor.setLidarReturnMode(2)        # set lidar return mode (0 = single 1st return, 1 = single strongest return, 2 = dual returns
-        sensor.setIMUdataPush(False)        # activate the IMU data stream (only for Horizon and Tele-15 sensors)
-        sensor.setRainFogSuppression(False) # turn on (True) or off (False) rain/fog suppression on the sensor
-        # False here because we are interested in catching snow particles moving through the sensor
-
-        while nb_scan < nb_scan_max or nb_scan_max == 0:
-            while nb_scan < nb_scan_to_end or nb_scan < nb_scan_max:
+    nb_scan_to_end_serie = loop_scanning_time / scan_interval
+    nb_scan_total = 0
+    while nb_scan_total < nb_scan_max or nb_scan_max == 0:
+        nb_scan = 0 # Reset value to 0 so the following logic works
+        sensor = opl.openpylivox(True)
+        connected = sensor.auto_connect(IP_sensor)
+        if connected:
+            logging.info("Connection to LIVOX successful")
+            sensor.setExtrinsicToZero()
+            sensor.lidarSpinUp()                # Data Acquisition
+            sensor.setLidarReturnMode(2)        # set lidar return mode (0 = single 1st return, 1 = single strongest return, 2 = dual returns
+            sensor.setIMUdataPush(False)        # activate the IMU data stream (only for Horizon and Tele-15 sensors)
+            sensor.setRainFogSuppression(False) # turn on (True) or off (False) rain/fog suppression on the sensor
+            # False here because we are interested in catching snow particles moving through the sensor
+            while nb_scan < nb_scan_to_end_serie and (nb_scan_max == 0 or nb_scan < nb_scan_max):
                 # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
                 # as it would drift, giving data points clouds not neatly spread in time
                 while not (datetime.utcnow().second % scan_interval == 0):
@@ -63,11 +63,11 @@ def acquire_clouds(scan_duration=3.0,
 
                 logging.info("Lidar loop " + str(nb_scan) + " ==== Cloud acquired with name " + filename)
                 nb_scan += 1
-
-        # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
-        sensor.lidarSpinDown()
-        sensor.disconnect()
-        logging.info("Disconnected from LIVOX because of the 1h limit")
+            nb_scan_total = nb_scan_total + nb_scan  
+            # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
+            sensor.lidarSpinDown()
+            sensor.disconnect()
+            logging.info("Disconnected from LIVOX because of the " + loop_scanning_time +  "s limit")
     else:
         print("\n***** Could not connect to Livox sensor with IP address " + IP_sensor + " *****\n")
         logging.error("Could not connect to Livox sensor with IP address " + IP_sensor)
