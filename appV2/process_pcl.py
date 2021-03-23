@@ -158,7 +158,7 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
 
 
 if __name__ == "__main__":
-    import argparse
+    import argparse, os
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file', '-cf', help='Path to config file', default='/home/config.ini')
@@ -173,7 +173,13 @@ if __name__ == "__main__":
     TODO HERE: 
         - add logic here to check folders to move files around exist. Create if not existing
     '''
-
+    path_to_data=config.get('processing', 'path_to_data')
+    os.makedirs(path_to_data, exist_ok=True)
+    os.makedirs(path_to_data + 'bin', exist_ok=True)
+    os.makedirs(path_to_data + 'las_raw', exist_ok=True)
+    os.makedirs(path_to_data + 'las_referenced', exist_ok=True)
+    os.makedirs(path_to_data + 'OUTPUT', exist_ok=True)
+    os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
     rotate_point_clouds(extrinsic=config.getfloat('processing', 'extrinsic'),
