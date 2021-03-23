@@ -11,7 +11,7 @@ reboot_system=true
 DATA_FOLDER=$(sed -n "/^\[$TRANSFER\]/ { :l /^send_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
 PCL_FILES=$DATA_FOLDER*
 TARGET_USER=$(sed -n "/^\[$TRANSFER\]/ { :l /^target_ssh_user[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
-TARGET_IP=$(sed -n "/^\[$TRANSFER\]/ { :l /^target_IP_address[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
+TARGET_SERVER=$(sed -n "/^\[$TRANSFER\]/ { :l /^target_server[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
 TARGET_FOLDER=$(sed -n "/^\[$TRANSFER\]/ { :l /^target_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
 ARCHIVE_FOLDER=$(sed -n "/^\[$TRANSFER\]/ { :l /^archive_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
 
@@ -22,7 +22,7 @@ then
 for f in $PCL_FILES
 do
   echo "Processing $f file..."
-  scp $f $TARGET_USER@$TARGET_IP:$TARGET_FOLDER
+  scp $f $TARGET_USER@$TARGET_SERVER:$TARGET_FOLDER
   # uncomment if wanna keep all raw data. WARNING check disk capacity for duration
 
 
