@@ -75,6 +75,11 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(args.config_file)
+    path_to_data=config.get('acquisition', 'data_folder')
+    os.makedirs(path_to_data, exist_ok=True)
+    os.makedirs(path_to_data + 'tmp', exist_ok=True)
+    os.makedirs(path_to_data + 'archive', exist_ok=True)
+    
     logging.basicConfig(filename=config.get('acquisition', 'data_folder') + 'Acquisition.log',
                         level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
@@ -84,8 +89,9 @@ if __name__ == "__main__":
     TODO HERE: add logic to check if folder structure is good and existing
     '''
 
+    
     acquire_clouds(scan_duration=config.getint('acquisition', 'scan_duration'),
                    scan_interval=config.getint('acquisition', 'scanning_interval'),
                    nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
-                   folder=config.get('acquisition', 'data_folder'),
+                   folder=config.get('acquisition', 'data_folder') + "tmp/",
                    IP_sensor=config.get('acquisition', 'scanner_IP'))
