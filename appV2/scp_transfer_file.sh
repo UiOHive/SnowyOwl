@@ -15,6 +15,7 @@ TARGET_IP=sed -n "/^\[$TRANSFER\]/ { :l /^target_IP_address[ ]*=/ { s/.*=[ ]*//;
 TARGET_FOLDER=sed -n "/^\[$TRANSFER\]/ { :l /^target_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE
 ARCHIVE_FOLDER=sed -n "/^\[$TRANSFER\]/ { :l /^archive_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE
 
+cd $DATA_FOLDER
 
 for f in $PCL_FILES
 do
