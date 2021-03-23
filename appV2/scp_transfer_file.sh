@@ -1,10 +1,10 @@
 # Script to push newly acquired file to snowyowl for further processing
 
 # USER SETTINGS
-CONFIG_FILE=example_config.ini
-TRANSFER="transfer_acq2proc"
+CONFIG_FILE=config.ini
+TRANSFER="transfer_proc2storage"
 delete_transfered_file=true
-reboot_system=true
+reboot_system=false
 
 
 # Pull information from config_file
@@ -15,8 +15,10 @@ TARGET_IP=$(sed -n "/^\[$TRANSFER\]/ { :l /^target_IP_address[ ]*=/ { s/.*=[ ]*/
 TARGET_FOLDER=$(sed -n "/^\[$TRANSFER\]/ { :l /^target_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
 ARCHIVE_FOLDER=$(sed -n "/^\[$TRANSFER\]/ { :l /^archive_folder[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" ./$CONFIG_FILE)
 
-cd $DATA_FOLDER
 
+cd $DATA_FOLDER
+if [[ "$DATA_FOLDER" == "$(pwd)/" ]];
+then
 for f in $PCL_FILES
 do
   echo "Processing $f file..."
@@ -24,7 +26,7 @@ do
   # uncomment if wanna keep all raw data. WARNING check disk capacity for duration
 
 
-  if [ $delete_transfered_file ]
+  if $delete_transfered_file;
   then
     # remove raw file after file has been sent
     rm $f
@@ -32,8 +34,9 @@ do
     mv  $f $ARCHIVE_FOLDER
   fi
 done
+fi
 
-if [ $reboot_system ]
+if $reboot_system;
 then
  sudo reboot
 fi
