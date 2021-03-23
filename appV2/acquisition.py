@@ -18,7 +18,8 @@ def acquire_clouds(scan_duration=3.0,
                    scan_interval=10,
                    nb_scan_max=5,
                    folder='/home/data/',
-                   IP_sensor='192.168.1.104'):
+                   IP_sensor='192.168.13.104',
+                   IP_computer='192.168.13.35'):
     """
     Function to connect and sample point clouds for a given time at every given interval.
     :param scan_duration: duration in second of a scan
@@ -30,7 +31,7 @@ def acquire_clouds(scan_duration=3.0,
     """
     nb_scan = 0 # Reset value to 0 so the following logic works
     sensor = opl.openpylivox(True)
-    connected = sensor.auto_connect(IP_sensor)
+    connected = sensor.auto_connect(IP_computer)
     if connected:
         logging.info("Connection to LIVOX successful")
         sensor.setExtrinsicToZero()
@@ -94,4 +95,5 @@ if __name__ == "__main__":
                    scan_interval=config.getint('acquisition', 'scanning_interval'),
                    nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
                    folder=config.get('acquisition', 'data_folder') + "tmp/",
-                   IP_sensor=config.get('acquisition', 'scanner_IP'))
+                   IP_sensor=config.get('acquisition', 'scanner_IP'),
+                   IP_computer=config.get('acquisition', 'computer_IP'))

@@ -5,7 +5,7 @@ import time, os, sys, logging
 #from scp import SCPClient
 
 class SnowyOwlAcquisition():
-    def __init__(self, outfolder="/home/", ip_livox="192.168.1.104", ip_computer="192.168.1.2"):
+    def __init__(self, outfolder="/home/", ip_livox="192.168.13.104", ip_computer="192.168.13.35"):
         '''
         outFolder: location of output
         LIVOX_IP: IP address of LIVOX sensor (typically 198.168.1.1XX, with XX the last numbers of serial number)
