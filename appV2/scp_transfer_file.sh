@@ -3,8 +3,8 @@
 # USER SETTINGS
 CONFIG_FILE=example_config.ini
 TRANSFER="transfer_acq2proc"
-delete_transfered_file=TRUE
-reboot_system=TRUE
+delete_transfered_file=true
+reboot_system=true
 
 
 # Pull information from config_file
@@ -33,7 +33,7 @@ do
   fi
 done
 
-if [reboot_system]
+if [ $reboot_system ]
 then
  sudo reboot
 fi
