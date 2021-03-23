@@ -67,7 +67,7 @@ def acquire_clouds(scan_duration=3.0,
 
 
 if __name__ == "__main__":
-    import argparse
+    import argparse, os
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file', '-cf', help='Path to config file', default='/home/config.ini')
