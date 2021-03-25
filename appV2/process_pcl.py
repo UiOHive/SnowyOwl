@@ -182,7 +182,7 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
-    rotate_point_clouds(extrinsic=config.getfloat('processing', 'extrinsic'),
+    rotate_point_clouds(extrinsic=config.getfloat('processing', 'sensor_extrinsic'),
                         z_range=config.getfloat('processing', 'z_range'),
                         path_to_data=config.get('processing', 'path_to_data'))
     extract_pcl_subset(corners=config.getfloat('processing', 'crop_extent'),
