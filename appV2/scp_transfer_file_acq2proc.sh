@@ -17,7 +17,7 @@ ARCHIVE_FOLDER=$(sed -n "/^\[$TRANSFER\]/ { :l /^archive_folder[ ]*=/ { s/.*=[ ]
 
 
 cd $DATA_FOLDER
-if [[ "$DATA_FOLDER" == "$(pwd)/" ]];
+if [[ "$DATA_FOLDER" == $(pwd)"/" ]];
 then
 for f in $PCL_FILES
 do
