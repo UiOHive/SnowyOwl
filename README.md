@@ -55,13 +55,12 @@ crontab -e
 # add the following line to the Crontab to transfer files every 30 minutes. 
 0,30 * * * * sh github/SnowyOwl/appV2/scp_transfer_file.sh
 # CHECK config in scp_transfer_file.sh
+# launch python program after reboot:
+@reboot sleep 30 && /home/livoxpi/miniconda3/envs/livoxenv/bin/python /home/livoxpi/git/SnowyOwl/appV2/acquisition.py -cf /home/livoxpi/config.ini
 
 # Create two folders one for temporary storage of data and one for archiving
 mkdir <project_path>/tmp
 mkdir <project_path>/archive
-
-# setup systemd to launch Python script at startup
-[LUC, CAN YOU ADD HERE??]
 
 # Allow to reboot computer with no password (as connection to lidar is unstable after couple hours)
 # Reboot after each scp file transfer
