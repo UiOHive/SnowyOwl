@@ -35,7 +35,7 @@ def convert_bin_to_las(path_to_data='/home/data/'):
     file_list = glob.glob(path_to_data + 'bin/*.bin')
     for file in file_list:
         opl.convertBin2LAS(file, deleteBin=True)
-        os.rename(file[:-4] + '.las', path_to_data + 'las_raw/' + file.split('/')[-1][:-4] + '.las')
+        os.rename(file + '.las', path_to_data + 'las_raw/' + file.split('/')[-1][:-4] + '.las')
 
 def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range=[-20, 20], path_to_data='/home/data/'):
     rot_mat = rotation_matrix_pdal(extrinsic)
