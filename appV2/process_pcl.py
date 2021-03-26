@@ -20,13 +20,12 @@ def rotation_matrix_pdal(extrinsic=[0,0,0,0,0,0]):
     :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
     :return: rotation matrix in string format ready for PDAL
     """
-    Mom = np.matrix([[1, 0, 0], [0, np.cos(np.radians(extrinsic[3])), np.sin(np.radians(extrinsic[3]))],
+    Mom = np.array([[1, 0, 0], [0, np.cos(np.radians(extrinsic[3])), np.sin(np.radians(extrinsic[3]))],
                      [0, -np.sin(np.radians(extrinsic[3])), np.cos(np.radians(extrinsic[3]))]])
-    Mph = np.matrix([[np.cos(np.radians(extrinsic[4])), 0, -np.sin(np.radians(extrinsic[4]))], [0, 1, 0],
-                     [np.sin(np.radians(extrinsic[4])), 0, np.cos(np.radians(extrinsic[4]))]])
-    Mkp = np.matrix([[np.cos(np.radians(extrinsic[5])), np.sin(np.radians(extrinsic[5])), 0],
+    Mph = np.array  [np.sin(np.radians(extrinsic[4])), 0, np.cos(np.radians(extrinsic[4]))]])
+    Mkp = np.array([[np.cos(np.radians(extrinsic[5])), np.sin(np.radians(extrinsic[5])), 0],
                      [-np.sin(np.radians(extrinsic[5])), np.cos(np.radians(extrinsic[5])), 0], [0, 0, 1]])
-    rotMat = (Mkp * Mph * Mom).T.getA().flatten()
+    rotMat = (Mkp * Mph * Mom).T.flatten()
     affineMatrix = np.concatenate((rotMat[0:3], [extrinsic[0]], rotMat[3:6], [extrinsic[1]], rotMat[6:9], [extrinsic[2]], [0], [0], [0], [1]))
     affineMatrixString = ' '.join([str(elem) for elem in affineMatrix])
     return affineMatrixString
@@ -37,7 +36,7 @@ def convert_bin_to_las(path_to_data='/home/data/'):
         opl.convertBin2LAS(file, deleteBin=True)
         os.rename(file + '.las', path_to_data + 'las_raw/' + file.split('/')[-1][:-4] + '.las')
 
-def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20, 20]', crop_corners='([-20, 5], [-5, 5])', path_to_data='/home/data/'):
+def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 5], [-5, 5])', path_to_data='/home/data/'):
     """
     Function to rotate point clouds and crop potential outliers
     :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
