@@ -2,3 +2,4 @@ app/snowyOwl.egg-info/*
 app/snowyowl/__pycache__/*
 .idea/
 /data/*
+appV2/.ipynb_checkpoints/
