@@ -22,7 +22,8 @@ def rotation_matrix_pdal(extrinsic=[0,0,0,0,0,0]):
     """
     Mom = np.array([[1, 0, 0], [0, np.cos(np.radians(extrinsic[3])), np.sin(np.radians(extrinsic[3]))],
                      [0, -np.sin(np.radians(extrinsic[3])), np.cos(np.radians(extrinsic[3]))]])
-    Mph = np.array  [np.sin(np.radians(extrinsic[4])), 0, np.cos(np.radians(extrinsic[4]))]])
+    Mph = np.array([[np.cos(np.radians(extrinsic[4])), 0, -np.sin(np.radians(extrinsic[4]))], [0, 1, 0],
+                     [np.sin(np.radians(extrinsic[4])), 0, np.cos(np.radians(extrinsic[4]))]])
     Mkp = np.array([[np.cos(np.radians(extrinsic[5])), np.sin(np.radians(extrinsic[5])), 0],
                      [-np.sin(np.radians(extrinsic[5])), np.cos(np.radians(extrinsic[5])), 0], [0, 0, 1]])
     rotMat = (Mkp * Mph * Mom).T.flatten()
