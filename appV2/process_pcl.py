@@ -37,7 +37,15 @@ def convert_bin_to_las(path_to_data='/home/data/'):
         opl.convertBin2LAS(file, deleteBin=True)
         os.rename(file + '.las', path_to_data + 'las_raw/' + file.split('/')[-1][:-4] + '.las')
 
-def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range=[-20, 20], path_to_data='/home/data/'):
+def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20, 20]', crop_corners='([-20, 5], [-5, 5])', path_to_data='/home/data/'):
+    """
+    Function to rotate point clouds and crop potential outliers
+    :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
+    :param z_range: [Zmin, Zmax] crop in Z of the point clouds.
+    :param crop_corners: [Xmin, Xmax, Ymin, Ymax] crop in X and Y of the point clouds to exclude
+    :param path_to_data:
+    :return:
+    """
     rot_mat = rotation_matrix_pdal(extrinsic)
     file_list = glob.glob(path_to_data + 'las_raw/*.las')
 
@@ -53,8 +61,12 @@ def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range=[-20, 20], path_to_data
                          },
                         {
                             "type": "filters.range",
-                            "limits": "Z" + str(z_range)
+                            "limits": "Z" + z_range
                         },
+                        {
+                                "type": "filters.crop",
+                                "bounds": crop_corners
+                            },
                         {
                             "type":"writers.las",
                             "filename": path_to_data + "las_referenced/" + file.split('/')[-1]
@@ -64,10 +76,10 @@ def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range=[-20, 20], path_to_data
         pipeline = pdal.Pipeline(pip_filter_json)
         pipeline.execute()
 
-def extract_pcl_subset(corners=[-0.5, 0.5, -0.5, 0.5], path_to_data='/home/data/'):
+def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/data/'):
     """
     Function to extract a point cloud vertical column subset defined by the corners coordinates
-    :param corners: [x_min,x_max,y_min,y_max] of the cropped area to keep all point for
+    :param corners: x_min,x_max,y_min,y_max of the cropped area to keep all point for
     :param path_to_data:
     :return:
     """
@@ -81,11 +93,11 @@ def extract_pcl_subset(corners=[-0.5, 0.5, -0.5, 0.5], path_to_data='/home/data/
                             file,
                             {
                                 "type": "filters.crop",
-                                "bounds":str(corners)
+                                "bounds": corners
                             },
                             {
                                 "type":"writers.las",
-                                "filename":path_to_data + "OUTPUT/" +  file.split('/')[-1][:-4] + "_cropped.las"
+                                "filename": path_to_data + "OUTPUT/" +  file.split('/')[-1][:-4] + "_cropped.las"
                             }
                         ]
                 }
@@ -182,10 +194,11 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
-    rotate_point_clouds(extrinsic=config.getfloat('processing', 'sensor_extrinsic'),
-                        z_range=config.getfloat('processing', 'z_range'),
+    rotate_point_clouds(extrinsic=[float(i) for i in config.get('processing', 'sensor_extrinsic').split(',')],
+                        z_range=config.get('processing', 'z_range'),
+                        crop_corners=config.get('processing', 'crop_extent'),
                         path_to_data=config.get('processing', 'path_to_data'))
-    extract_pcl_subset(corners=config.getfloat('processing', 'crop_extent'),
+    extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),
                        path_to_data=config.get('processing', 'path_to_data'))
     extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
                 sampling_interval=config.getint('processing', 'dem_sampling_interval'),
