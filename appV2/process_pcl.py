@@ -20,11 +20,11 @@ def rotation_matrix_pdal(extrinsic=[0,0,0,0,0,0]):
     :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
     :return: rotation matrix in string format ready for PDAL
     """
-    Mom = np.array([[1, 0, 0], [0, np.cos(np.radians(extrinsic[3])), np.sin(np.radians(extrinsic[3]))],
+    Mom = np.matrix([[1, 0, 0], [0, np.cos(np.radians(extrinsic[3])), np.sin(np.radians(extrinsic[3]))],
                      [0, -np.sin(np.radians(extrinsic[3])), np.cos(np.radians(extrinsic[3]))]])
-    Mph = np.array([[np.cos(np.radians(extrinsic[4])), 0, -np.sin(np.radians(extrinsic[4]))], [0, 1, 0],
+    Mph = np.matrix([[np.cos(np.radians(extrinsic[4])), 0, -np.sin(np.radians(extrinsic[4]))], [0, 1, 0],
                      [np.sin(np.radians(extrinsic[4])), 0, np.cos(np.radians(extrinsic[4]))]])
-    Mkp = np.array([[np.cos(np.radians(extrinsic[5])), np.sin(np.radians(extrinsic[5])), 0],
+    Mkp = np.matrix([[np.cos(np.radians(extrinsic[5])), np.sin(np.radians(extrinsic[5])), 0],
                      [-np.sin(np.radians(extrinsic[5])), np.cos(np.radians(extrinsic[5])), 0], [0, 0, 1]])
     rotMat = (Mkp * Mph * Mom).T.getA().flatten()
     affineMatrix = np.concatenate((rotMat[0:3], [extrinsic[0]], rotMat[3:6], [extrinsic[1]], rotMat[6:9], [extrinsic[2]], [0], [0], [0], [1]))
