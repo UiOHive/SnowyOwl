@@ -85,7 +85,7 @@ def extract_pcl_subset(corners=[-0.5, 0.5, -0.5, 0.5], path_to_data='/home/data/
                             },
                             {
                                 "type":"writers.las",
-                                "filename":path_to_data + "OUTPUT/" +  file.split('/')[-1][:-4] + "_cropped.las"
+                                "filename":path_to_data + "las_crop/" +  file.split('/')[-1][:-4] + "_cropped.las"
                             }
                         ]
                 }
@@ -94,6 +94,20 @@ def extract_pcl_subset(corners=[-0.5, 0.5, -0.5, 0.5], path_to_data='/home/data/
             pipeline.execute()
     except IOError:
         print('Pdal pipeline failed to extract subset')
+
+def las_2_laz(path_to_data='/home/data/'):
+    """
+    Function to convert the LAS output into a lighter file format, LAZ
+    :param path_to_data:
+    :return:
+    """
+    try:
+        file_list = glob.glob(path_to_data + 'las_crop/*.las')
+        for file in file_list:
+            commandLas2Laz="pdal translate" + file + file.split('/')[-1][:-4] + "laz"
+            os.system(commandLas2Laz)
+    except IOError:
+        print('Failed to transform las to laz')
 
 def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/'):
     """
@@ -166,7 +180,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(args.config_file)
-    logging.basicConfig(filename=config.get('processing','path_to_data') + 'Processsing.log', level=logging.DEBUG,
+    logging.basicConfig(filename=config.get('processing','path_to_data') + 'Processing.log', level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
 
     '''
@@ -178,6 +192,7 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'bin', exist_ok=True)
     os.makedirs(path_to_data + 'las_raw', exist_ok=True)
     os.makedirs(path_to_data + 'las_referenced', exist_ok=True)
+    os.makedirs(path_to_data + 'las_crop', exist_ok=True)
     os.makedirs(path_to_data + 'OUTPUT', exist_ok=True)
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
@@ -187,6 +202,7 @@ if __name__ == "__main__":
                         path_to_data=config.get('processing', 'path_to_data'))
     extract_pcl_subset(corners=config.getfloat('processing', 'crop_extent'),
                        path_to_data=config.get('processing', 'path_to_data'))
+    las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
     extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
                 sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                 method=config.get('processing', 'dem_method'),
