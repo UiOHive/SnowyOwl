@@ -2,6 +2,11 @@
 Script to deelop and test code
 S. Filhol
 
+TODO:
+- create netcdf file, Finish
+- figure if netcdf compression possible: Library to compress netcdf: https://github.com/coecms/nccompress
+
+
 '''
 
 import pandas as pd
@@ -34,17 +39,17 @@ print('Data cut in a ' + str(bins_x.__len__()) + ' by ' + str(bins_y.__len__()) 
 print('dx = ' + str(dx) + ' ; dy = ' + str(dy))
 grouped = df.groupby([x_cuts, y_cuts])
 
-plt.figure()
-plt.imshow(grouped.z.min().unstack().T, vmin=-9.5, vmax=-9)
-plt.colorbar()
 
-samp = np.linspace(0, df.shape[0],9999).astype(int)[:-2]
-plt.figure()
-plt.scatter(df.x.iloc[samp], df.y.iloc[samp], c= df.z.iloc[samp], vmin=-9.5, vmax=-9)
+def pad_with_nan(val, bins_x, bins_y):
+    arr = np.empty([bins_y.shape[0],bins_x.shape[0]])*np.nan
+    arr[np.ix_(val.index.astype(int),val.columns.astype(int))] = val
+    return arr
+
+test=pad_with_nan( grouped.z.count().unstack().T, bins_x=bins_x, bins_y=bins_y)
 
 ds = xr.Dataset(
     {
-        "pts_count":(["x", "y", "time"], grouped.z.count().unstack().T),
+        "pts_count":(["x", "y", "time"], pad_with_nan( grouped.z.count().unstack().T, bins_x=bins_x, bins_y=bins_y)),
         "z_min": (["x", "y", "time"], grouped.z.min().unstack().T),
         "z_5": (["x", "y", "time"], grouped.z.quantile(0.05).unstack().T),
         "z_10": (["x", "y", "time"], grouped.z.quantile(0.1).unstack().T),
@@ -74,3 +79,16 @@ ds.attrs = {'title':'Forcing for SURFEX crocus',
                 'institution': 'Department of Geosciences, University of Oslo, Norway',
                 'date_created': dt.datetime.now().strftime('%Y/%m/%d %H:%M:%S')}
 ds.to_netcdf("saved_on_disk.nc")
+
+
+
+
+#====== test zone
+
+plt.figure()
+plt.imshow(arr, vmin=10, vmax=60)
+plt.colorbar()
+
+samp = np.linspace(0, df.shape[0],9999).astype(int)[:-2]
+plt.figure()
+plt.scatter(df.x.iloc[samp], df.y.iloc[samp], c= df.z.iloc[samp], vmin=-9.5, vmax=-9)

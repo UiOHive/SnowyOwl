@@ -20,12 +20,13 @@ def rotation_matrix_pdal(extrinsic=[0,0,0,0,0,0]):
     :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
     :return: rotation matrix in string format ready for PDAL
     """
-    Mom = np.array([[1, 0, 0], [0, np.cos(np.radians(extrinsic[3])), np.sin(np.radians(extrinsic[3]))],
-                     [0, -np.sin(np.radians(extrinsic[3])), np.cos(np.radians(extrinsic[3]))]])
-    Mph = np.array([[np.cos(np.radians(extrinsic[4])), 0, -np.sin(np.radians(extrinsic[4]))], [0, 1, 0],
-                     [np.sin(np.radians(extrinsic[4])), 0, np.cos(np.radians(extrinsic[4]))]])
-    Mkp = np.array([[np.cos(np.radians(extrinsic[5])), np.sin(np.radians(extrinsic[5])), 0],
-                     [-np.sin(np.radians(extrinsic[5])), np.cos(np.radians(extrinsic[5])), 0], [0, 0, 1]])
+    ext_rad = np.radians(extrinsic)
+    Mom = np.array([[1, 0, 0], [0, np.cos(ext_rad[3]), np.sin(ext_rad[3])],
+                     [0, -np.sin(ext_rad[3]), np.cos(ext_rad[3])]])
+    Mph = np.array([[np.cos(ext_rad[4]), 0, -np.sin(ext_rad[4])], [0, 1, 0],
+                     [np.sin(ext_rad[4]), 0, np.cos(ext_rad[4])]])
+    Mkp = np.array([[np.cos(ext_rad[5]), np.sin(ext_rad[5]), 0],
+                     [-np.sin(ext_rad[5]), np.cos(ext_rad[5]), 0], [0, 0, 1]])
     rotMat = (Mkp * Mph * Mom).T.flatten()
     affineMatrix = np.concatenate((rotMat[0:3], [extrinsic[0]], rotMat[3:6], [extrinsic[1]], rotMat[6:9], [extrinsic[2]], [0], [0], [0], [1]))
     affineMatrixString = ' '.join([str(elem) for elem in affineMatrix])
@@ -37,7 +38,7 @@ def convert_bin_to_las(path_to_data='/home/data/'):
         opl.convertBin2LAS(file, deleteBin=True)
         os.rename(file + '.las', path_to_data + 'las_raw/' + file.split('/')[-1][:-4] + '.las')
 
-def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 5], [-5, 5])', path_to_data='/home/data/'):
+def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/'):
     """
     Function to rotate point clouds and crop potential outliers
     :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
@@ -57,7 +58,7 @@ def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corner
                         file,
                         {
                             "type":"filters.transformation",
-                            "matrix": rot_mat
+                            "matrix": '-0.34448594  0.93707407  0.05675957  2.51637959 -0.00583132  0.05832322 -0.9982807   0.35913649 -0.93877339 -0.34422466 -0.01462715  9.57211494 0. 0. 0. 1.'
                          },
                         {
                             "type": "filters.range",
@@ -76,6 +77,44 @@ def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corner
         pipeline = pdal.Pipeline(pip_filter_json)
         pipeline.execute()
 
+def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/'):
+    """
+    Function to rotate point clouds and crop potential outliers
+    :param z_range: [Zmin, Zmax] crop in Z of the point clouds.
+    :param crop_corners: [Xmin, Xmax, Ymin, Ymax] crop in X and Y of the point clouds to exclude
+    :param path_to_data:
+    :return:
+    """
+
+    file_list = glob.glob(path_to_data + '/*.las')
+
+    for file in file_list:
+        pip_filter_json = json.dumps(
+            {
+                "pipeline":
+                    [
+                        file,
+                        {
+                            "type":"filters.transformation",
+                            "matrix": '-0.34448594  0.93707407  0.05675957  2.51637959 -0.00583132  0.05832322 -0.9982807   0.35913649 -0.93877339 -0.34422466 -0.01462715  9.57211494 0. 0. 0. 1.'
+                         },
+                        {
+                            "type": "filters.range",
+                            "limits": "Z" + z_range
+                        },
+                        {
+                                "type": "filters.crop",
+                                "bounds": crop_corners
+                            },
+                        {
+                            "type":"writers.las",
+                            "filename": path_to_data + "/las_reference/" + file.split('/')[-1]
+                        }
+                    ]
+            })
+        pipeline = pdal.Pipeline(pip_filter_json)
+        pipeline.execute()
+        
 def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/data/'):
     """
     Function to extract a point cloud vertical column subset defined by the corners coordinates
@@ -209,8 +248,7 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
-    rotate_point_clouds(extrinsic=[float(i) for i in config.get('processing', 'sensor_extrinsic').split(',')],
-                        z_range=config.get('processing', 'z_range'),
+    tmp_rotate_point_clouds(z_range=config.get('processing', 'z_range'),
                         crop_corners=config.get('processing', 'crop_extent'),
                         path_to_data=config.get('processing', 'path_to_data'))
     extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),

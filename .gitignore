@@ -1,5 +1,5 @@
 app/snowyOwl.egg-info/*
 app/snowyowl/__pycache__/*
 .idea/
-/data/*
+data/*
 appV2/.ipynb_checkpoints/
