@@ -93,31 +93,34 @@ def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5
     file_list = glob.glob(path_to_data + 'las_raw/*.las')
 
     for file in file_list:
-        pip_filter_json = json.dumps(
-            {
-                "pipeline":
-                    [
-                        file,
-                        {
-                            "type":"filters.transformation",
-                            "matrix": '-0.34448594  0.93707407  0.05675957  2.51637959 -0.00583132  0.05832322 -0.9982807   0.35913649 -0.93877339 -0.34422466 -0.01462715  9.57211494 0. 0. 0. 1.'
-                         },
-                        {
-                            "type": "filters.range",
-                            "limits": "Z" + z_range
-                        },
-                        {
-                                "type": "filters.crop",
-                                "bounds": crop_corners
+        try:
+            pip_filter_json = json.dumps(
+                {
+                    "pipeline":
+                        [
+                            file,
+                            {
+                                "type":"filters.transformation",
+                                "matrix": '-0.34448594  0.93707407  0.05675957  2.51637959 -0.00583132  0.05832322 -0.9982807   0.35913649 -0.93877339 -0.34422466 -0.01462715  9.57211494 0. 0. 0. 1.'
+                             },
+                            {
+                                "type": "filters.range",
+                                "limits": "Z" + z_range
                             },
-                        {
-                            "type":"writers.las",
-                            "filename": path_to_data + "/las_reference/" + file.split('/')[-1]
-                        }
-                    ]
-            })
-        pipeline = pdal.Pipeline(pip_filter_json)
-        pipeline.execute()
+                            {
+                                    "type": "filters.crop",
+                                    "bounds": crop_corners
+                                },
+                            {
+                                "type":"writers.las",
+                                "filename": path_to_data + "las_reference/" + file.split('/')[-1]
+                            }
+                        ]
+                })
+            pipeline = pdal.Pipeline(pip_filter_json)
+            pipeline.execute()
+        except Exception:
+            print('Pdal pipeline failed to extract subset')
         
 def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/data/'):
     """
@@ -126,9 +129,10 @@ def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/da
     :param path_to_data:
     :return:
     """
-    try:
-        file_list = glob.glob(path_to_data + 'las_referenced/*.las')
-        for file in file_list:
+    
+    file_list = glob.glob(path_to_data + 'las_referenced/*.las')
+    for file in file_list:
+        try:
             pip_filter_json = json.dumps(
                 {
                     "pipeline":
@@ -147,8 +151,8 @@ def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/da
             )
             pipeline = pdal.Pipeline(pip_filter_json)
             pipeline.execute()
-    except IOError:
-        print('Pdal pipeline failed to extract subset')
+        except Exception:
+            print('Pdal pipeline failed to extract subset')
 
 def las_2_laz(path_to_data='/home/data/', delete_las=True):
     """
@@ -175,9 +179,10 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
     :param path_to_data:
     :return: 1 if success, 0 otherwise
     """
-    try:
-        file_list = glob.glob(path_to_data + 'las_referenced/*.las')
-        for file in file_list:
+    
+    file_list = glob.glob(path_to_data + 'las_referenced/*.las')
+    for file in file_list:
+        try:
             tst_data = pd.to_datetime(file.split('/')[-1][:19])
             if tst_data % sampling_interval == 0:
                 # Compute DEM with PDAL
@@ -225,8 +230,8 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
                     #         dy = (yend - ystart) / ny
                     #         print('dx = ' + str(dx) + ' ; dy = ' + str(dy))
                     #         grouped = df.groupby([x_cuts, y_cuts])
-    except Exception:
-        print('Pdal pipeline to derive DEM failed')
+        except Exception:
+            print('Pdal pipeline to derive DEM failed')
 
 
 if __name__ == "__main__":
@@ -240,6 +245,8 @@ if __name__ == "__main__":
     config.read(args.config_file)
     logging.basicConfig(filename=config.get('processing','path_to_data') + 'Processing.log', level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
+    logging.StreamHandler()
+    
 
     '''
     TODO HERE: 
@@ -254,18 +261,18 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'OUTPUT', exist_ok=True)
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
-    print("convert bin to las")
+    logging.info("Convert bin to las")
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
-    print('Rotating PCL')
+    logging.info('Rotating PCL')
     tmp_rotate_point_clouds(z_range=config.get('processing', 'z_range'),
                         crop_corners=config.get('processing', 'crop_extent'),
                         path_to_data=config.get('processing', 'path_to_data'))
-    print('Extracting PCL subset')
+    logging.info('Extracting PCL subset')
     extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),
                        path_to_data=config.get('processing', 'path_to_data'))
-    print('Converting las to laz')
+    logging.info('Converting las to laz')
     las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
-    print('Extract DEM')
+    logging.info('Extract DEM')
     extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
                 sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                 method=config.get('processing', 'dem_method'),
