@@ -90,7 +90,7 @@ def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5
     :return:
     """
 
-    file_list = glob.glob(path_to_data + '/*.las')
+    file_list = glob.glob(path_to_data + 'las_raw/*.las')
 
     for file in file_list:
         pip_filter_json = json.dumps(
