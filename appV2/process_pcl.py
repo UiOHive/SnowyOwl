@@ -39,7 +39,8 @@ def convert_bin_to_las(path_to_data='/home/data/'):
         if os.path.isfile(file + '.las'):
             os.rename(file + '.las', path_to_data + 'las_raw/' + file.split('/')[-1][:-4] + '.las')
         else:
-            print(file, ' does not exist.')
+            os.remove(file)
+            print(file, ' removed.')
 
 def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/'):
     """
@@ -158,7 +159,7 @@ def las_2_laz(path_to_data='/home/data/'):
     try:
         file_list = glob.glob(path_to_data + 'las_crop/*.las')
         for file in file_list:
-            commandLas2Laz="pdal translate" + file + file.split('/')[-1][:-4] + "laz"
+            commandLas2Laz="pdal translate" + file + file.split('/')[-1][:-4] + ".laz"
             os.system(commandLas2Laz)
     except IOError:
         print('Failed to transform las to laz')
