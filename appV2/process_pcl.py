@@ -140,7 +140,7 @@ def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/da
                             },
                             {
                                 "type":"writers.las",
-                                "filename":path_to_data + "las_crop/" +  file.split('/')[-1][:-4] + "_cropped.las"
+                                "filename":path_to_data + "las_crop/" +  file.split('/')[-1][:-4] + "cropped.las"
                             }
                         ]
                 }
@@ -150,19 +150,22 @@ def extract_pcl_subset(corners='([-0.5,0.5],[-0.5,0.5])', path_to_data='/home/da
     except IOError:
         print('Pdal pipeline failed to extract subset')
 
-def las_2_laz(path_to_data='/home/data/'):
+def las_2_laz(path_to_data='/home/data/', delete_las=True):
     """
     Function to convert the LAS output into a lighter file format, LAZ
     :param path_to_data:
     :return:
     """
-    try:
-        file_list = glob.glob(path_to_data + 'las_crop/*.las')
-        for file in file_list:
-            commandLas2Laz="pdal translate " + file+ ' ' + file.split('/')[-1][:-4] + ".laz"
+    file_list = glob.glob(path_to_data + 'las_crop/*.las')
+      
+    for file in file_list:
+        try:
+            commandLas2Laz="pdal translate " + file + ' ' + path_to_data + 'OUTPUT/' + file.split('/')[-1][:-4] + ".laz"
             os.system(commandLas2Laz)
-    except IOError:
-        print('Failed to transform las to laz')
+            if delete_las:
+                os.remove(file)
+        except IOError:
+            print('Failed to transform las to laz')
 
 def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/'):
     """
@@ -251,13 +254,18 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'OUTPUT', exist_ok=True)
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
+    print("convert bin to las")
     convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
+    print('Rotating PCL')
     tmp_rotate_point_clouds(z_range=config.get('processing', 'z_range'),
                         crop_corners=config.get('processing', 'crop_extent'),
                         path_to_data=config.get('processing', 'path_to_data'))
+    print('Extracting PCL subset')
     extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),
                        path_to_data=config.get('processing', 'path_to_data'))
+    print('Converting las to laz')
     las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
+    print('Extract DEM')
     extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
                 sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                 method=config.get('processing', 'dem_method'),
