@@ -180,10 +180,14 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
     """
     
     file_list = glob.glob(path_to_data + 'las_referenced/*.las')
+    
+    '''
+    TODO: Add logic here to the folder 'las_referenced/' exists, and that check file_list is not empty, otherwise log/print message
+    '''
     for file in file_list:
         try:
             tst_data = pd.to_datetime(file.split('/')[-1][:19])
-            if tst_data % sampling_interval == 0:
+            if tst_data % sampling_interval == 0:      #PRB HERE!!!!!!
                 # Compute DEM with PDAL
                 if method == 'pdal':
                     pip_filter_json = json.dumps(
