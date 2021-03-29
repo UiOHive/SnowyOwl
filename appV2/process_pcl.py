@@ -177,7 +177,6 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
     :param GSD: Ground
     :param method:
     :param path_to_data:
-    :return: 1 if success, 0 otherwise
     """
     
     file_list = glob.glob(path_to_data + 'las_referenced/*.las')
@@ -234,18 +233,42 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
             print('Pdal pipeline to derive DEM failed')
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1', 'True'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0', 'False'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+        
+            
 if __name__ == "__main__":
     import argparse, os
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file', '-cf', help='Path to config file', default='/home/config.ini')
+    parser.add_argument('--bin2las', '-bl', help='Convert .bin to .las', default='true')
+    parser.add_argument('--rotate_pcl', '-rt', help='Rotate .las file', default='true')
+    parser.add_argument('--sample', '-s', help='sample point cloud', default='true')
+    parser.add_argument('--dem', '-d', help='extract DEM', default='true')
+    parser.add_argument('--las2laz', '-lz', help='Convert .las to .laz', default='true')
     args = parser.parse_args()
 
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(args.config_file)
     logging.basicConfig(filename=config.get('processing','path_to_data') + 'Processing.log', level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
+    
+    # option to display to console
     logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    # create formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
     
 
     '''
@@ -261,20 +284,26 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'OUTPUT', exist_ok=True)
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
 
-    logging.info("Convert bin to las")
-    convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
-    logging.info('Rotating PCL')
-    tmp_rotate_point_clouds(z_range=config.get('processing', 'z_range'),
-                        crop_corners=config.get('processing', 'crop_extent'),
-                        path_to_data=config.get('processing', 'path_to_data'))
-    logging.info('Extracting PCL subset')
-    extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),
-                       path_to_data=config.get('processing', 'path_to_data'))
-    logging.info('Converting las to laz')
-    las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
-    logging.info('Extract DEM')
-    extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
-                sampling_interval=config.getint('processing', 'dem_sampling_interval'),
-                method=config.get('processing', 'dem_method'),
-                path_to_data=config.get('processing', 'path_to_data'))
+    if str2bool(args.bin2las):
+        logging.info("Convert bin to las")
+        convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
+    if str2bool(args.rotate_pcl):
+        logging.info('Rotating PCL')
+        tmp_rotate_point_clouds(z_range=config.get('processing', 'z_range'),
+                            crop_corners=config.get('processing', 'crop_extent'),
+                            path_to_data=config.get('processing', 'path_to_data'))
+    if str2bool(args.sample):
+        logging.info('Extracting PCL subset')
+        extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),
+                           path_to_data=config.get('processing', 'path_to_data'))
+    if str2bool(args.dem):
+        logging.info('Extract DEM')
+        extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
+                    sampling_interval=config.getint('processing', 'dem_sampling_interval'),
+                    method=config.get('processing', 'dem_method'),
+                    path_to_data=config.get('processing', 'path_to_data'))
+    if str2bool(args.las2laz):   
+        logging.info('Converting las to laz')
+        las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
+    
 
