@@ -186,8 +186,8 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
     '''
     for file in file_list:
         try:
-            tst_data = pd.to_datetime(file.split('/')[-1][:19])
-            if tst_data % sampling_interval == 0:      #PRB HERE!!!!!!
+            tst_data = pd.to_datetime(file.split('/')[-1][:19],format="%Y.%m.%dT%H-%M-%S")
+            if (tst_data.second + 60*tst_data.minute + 3600*tst_data.hour) % sampling_interval == 0:
                 # Compute DEM with PDAL
                 if method == 'pdal':
                     pip_filter_json = json.dumps(
