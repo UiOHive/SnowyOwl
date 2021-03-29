@@ -42,8 +42,8 @@ def acquire_clouds(scan_duration=3.0,
         # False here because we are interested in catching snow particles moving through the sensor
         while nb_scan_max == 0 or nb_scan < nb_scan_max:
             # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
-            # as it would drift, giving data points clouds not neatly spread in time
-            while not (datetime.utcnow().second % scan_interval == 0):
+            # as it would drift, giving data points clouds not neatly spread in time, even if scan_interval is up to 24h
+            while not ((datetime.utcnow().second + 60*datetime.utcnow().minute + 3600*datetime.utcnow().hour) % scan_interval == 0):
                 time.sleep(0.5)
             filename = folder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
             sensor.dataStart_RT_B()  # start data stream (real-time writing of point cloud data to a BINARY file)
