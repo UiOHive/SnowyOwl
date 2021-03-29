@@ -260,21 +260,6 @@ if __name__ == "__main__":
     config.read(args.config_file)
     logging.basicConfig(filename=config.get('processing','path_to_data') + 'Processing.log', level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
-    
-    # option to display to console
-    logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    # create formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    # add formatter to ch
-    ch.setFormatter(formatter)
-    
-
-    '''
-    TODO HERE: 
-        - add logic here to check folders to move files around exist. Create if not existing
-    '''
     path_to_data=config.get('processing', 'path_to_data')
     os.makedirs(path_to_data, exist_ok=True)
     os.makedirs(path_to_data + 'bin', exist_ok=True)
