@@ -171,7 +171,7 @@ def las_2_laz(path_to_data='/home/data/', delete_las=True):
         except IOError:
             print('Failed to transform las to laz')
 
-def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/', remove_las_files=True):
+def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/', delete_las=True):
     """
 
     :param GSD: Ground
@@ -209,11 +209,12 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
                     pipeline.execute()
 
                     # zip the geotiff and remove it
-                    zipcmd = "zip" + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".zip" + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif "
+                    zipcmd = "zip" + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".zip " + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif "
                     os.system(zipcmd)
                     os.remove(path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif")
             # even if the las wasn't turned into a DEM, it is now meant to be removed :
-            os.remove(file)
+            if delete_las:
+                os.remove(file)
                     # Compute DEM with pandas groupby
                     # if method == 'pandas':
                     #     """
