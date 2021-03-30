@@ -171,12 +171,13 @@ def las_2_laz(path_to_data='/home/data/', delete_las=True):
         except IOError:
             print('Failed to transform las to laz')
 
-def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/'):
+def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/', remove_las_files=True):
     """
 
     :param GSD: Ground
     :param method:
     :param path_to_data:
+    :param remove_las_files:
     """
     
     file_list = glob.glob(path_to_data + 'las_referenced/*.las')
@@ -207,6 +208,12 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
                     pipeline = pdal.Pipeline(pip_filter_json)
                     pipeline.execute()
 
+                    # zip the geotiff and remove it
+                    zipcmd = "zip" + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".zip" + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif "
+                    os.system(zipcmd)
+                    os.remove(path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif")
+            # even if the las wasn't turned into a DEM, it is now meant to be removed :
+            os.remove(file)
                     # Compute DEM with pandas groupby
                     # if method == 'pandas':
                     #     """
@@ -277,16 +284,16 @@ if __name__ == "__main__":
         logging.info("Convert bin to las")
         convert_bin_to_las(path_to_data=config.get('processing', 'path_to_data'))
     if str2bool(args.rotate_pcl):
-        logging.info('Rotating PCL')
+        logging.info('Rotating PCLs')
         tmp_rotate_point_clouds(z_range=config.get('processing', 'z_range'),
                             crop_corners=config.get('processing', 'crop_extent'),
                             path_to_data=config.get('processing', 'path_to_data'))
     if str2bool(args.sample):
-        logging.info('Extracting PCL subset')
+        logging.info('Extracting PCL subsets')
         extract_pcl_subset(corners=config.get('processing', 'crop_extent_subsample'),
                            path_to_data=config.get('processing', 'path_to_data'))
     if str2bool(args.dem):
-        logging.info('Extract DEM')
+        logging.info('Extract DEMs')
         extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
                     sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                     method=config.get('processing', 'dem_method'),
