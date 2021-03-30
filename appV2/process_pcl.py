@@ -209,7 +209,7 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
                     pipeline.execute()
 
                     # zip the geotiff and remove it
-                    zipcmd = "zip" + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".zip " + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif "
+                    zipcmd = "zip " + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".zip " + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif "
                     os.system(zipcmd)
                     os.remove(path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif")
             # even if the las wasn't turned into a DEM, it is now meant to be removed :
