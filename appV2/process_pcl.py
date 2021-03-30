@@ -42,7 +42,7 @@ def convert_bin_to_las(path_to_data='/home/data/'):
             os.remove(file)
             print(file, ' removed.')
 
-def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/'):
+def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/', delete_las=True):
     """
     Function to rotate point clouds and crop potential outliers
     :param extrinsic: [X,Y,Z,omega,phi,kappa] of the sensor
@@ -55,33 +55,38 @@ def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corner
     file_list = glob.glob(path_to_data + 'las_raw/*.las')
 
     for file in file_list:
-        pip_filter_json = json.dumps(
-            {
-                "pipeline":
-                    [
-                        file,
-                        {
-                            "type":"filters.transformation",
-                            "matrix": '-0.34448594  0.93707407  0.05675957  2.51637959 -0.00583132  0.05832322 -0.9982807   0.35913649 -0.93877339 -0.34422466 -0.01462715  9.57211494 0. 0. 0. 1.'
-                         },
-                        {
-                            "type": "filters.range",
-                            "limits": "Z" + z_range
-                        },
-                        {
-                                "type": "filters.crop",
-                                "bounds": crop_corners
+        try:
+            pip_filter_json = json.dumps(
+                {
+                    "pipeline":
+                        [
+                            file,
+                            {
+                                "type":"filters.transformation",
+                                "matrix": '-0.34448594  0.93707407  0.05675957  2.51637959 -0.00583132  0.05832322 -0.9982807   0.35913649 -0.93877339 -0.34422466 -0.01462715  9.57211494 0. 0. 0. 1.'
+                             },
+                            {
+                                "type": "filters.range",
+                                "limits": "Z" + z_range
                             },
-                        {
-                            "type":"writers.las",
-                            "filename": path_to_data + "las_referenced/" + file.split('/')[-1]
-                        }
-                    ]
-            })
-        pipeline = pdal.Pipeline(pip_filter_json)
-        pipeline.execute()
+                            {
+                                    "type": "filters.crop",
+                                    "bounds": crop_corners
+                                },
+                            {
+                                "type":"writers.las",
+                                "filename": path_to_data + "las_referenced/" + file.split('/')[-1]
+                            }
+                        ]
+                })
+            pipeline = pdal.Pipeline(pip_filter_json)
+            pipeline.execute()
+            if delete_las:
+                os.remove(file)
+        except Exception:
+            print('Pdal pipeline failed to extract subset')
 
-def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/'):
+def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/', delete_las=True):
     """
     Function to rotate point clouds and crop potential outliers
     :param z_range: [Zmin, Zmax] crop in Z of the point clouds.
@@ -119,6 +124,8 @@ def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5
                 })
             pipeline = pdal.Pipeline(pip_filter_json)
             pipeline.execute()
+            if delete_las:
+                os.remove(file)
         except Exception:
             print('Pdal pipeline failed to extract subset')
         
