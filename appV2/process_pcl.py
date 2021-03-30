@@ -113,7 +113,7 @@ def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5
                                 },
                             {
                                 "type":"writers.las",
-                                "filename": path_to_data + "las_reference/" + file.split('/')[-1]
+                                "filename": path_to_data + "las_referenced/" + file.split('/')[-1]
                             }
                         ]
                 })
