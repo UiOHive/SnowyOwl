@@ -178,20 +178,39 @@ def las_2_laz(path_to_data='/home/data/', delete_las=True):
         except IOError:
             print('Failed to transform las to laz')
 
-def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/home/data/', delete_las=True):
+def extract_dem(GSD= 0.1,
+                origin_x=0,
+                origin_y=0,
+                height=10,
+                width=20,
+                sampling_interval=180,
+                method='pdal',
+                path_to_data='/home/data/',
+                delete_las=True):
     """
+    Function to extract DEM using pdal writers
 
-    :param GSD: Ground
+    https://pdal.io/stages/writers.gdal.html
+
+    :param GSD: Ground Sampling Distance, often calle resolution [m]
+    :param origin_x: lower left x coordinate [m]
+    :param origin_y: lower left y coordinate [m]
+    :param height: DEM height [m]
+    :param width:  DEM width [m]
+    :param sampling_interval:
     :param method:
     :param path_to_data:
-    :param remove_las_files:
+    :param delete_las:
+    :return:
     """
     
     file_list = glob.glob(path_to_data + 'las_referenced/*.las')
-    
-    '''
-    TODO: Add logic here to the folder 'las_referenced/' exists, and that check file_list is not empty, otherwise log/print message
-    '''
+
+    # Convert width and height from meter to number of cell to be compatible with pdal
+    ncell_width = width // GSD
+    ncell_height = height // GSD
+
+
     for file in file_list:
         try:
             tst_data = pd.to_datetime(file.split('/')[-1][:19],format="%Y.%m.%dT%H-%M-%S")
@@ -208,6 +227,10 @@ def extract_dem(GSD= 0.1, sampling_interval=180, method='pdal', path_to_data='/h
                                         "gdaldriver": "GTiff",
                                         "output_type": "all",
                                         "resolution": str(GSD),
+                                        "origin_x": str(origin_x),
+                                        "origin_y": str(origin_y),
+                                        "width": str(ncell_height),
+                                        "height": str(ncell_width),
                                         "filename": path_to_data + "OUTPUT/" +  file.split('/')[-1][:-4] + ".tif"
                                     }
                                 ]
@@ -303,6 +326,10 @@ if __name__ == "__main__":
     if str2bool(args.dem):
         logging.info('Extract DEMs')
         extract_dem(GSD=config.getfloat('processing', 'dem_resolution'),
+                    origin_x=config.getfloat('processing', 'dem_origin_x'),
+                    origin_y=config.getfloat('processing', 'dem_origin_y'),
+                    height=config.getfloat('processing', 'dem_height'),
+                    width=config.getfloat('processing', 'dem_width'),
                     sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                     method=config.get('processing', 'dem_method'),
                     path_to_data=config.get('processing', 'path_to_data'))
