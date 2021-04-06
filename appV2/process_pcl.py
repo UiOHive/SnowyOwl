@@ -229,8 +229,8 @@ def extract_dem(GSD= 0.1,
                                         "resolution": str(GSD),
                                         "origin_x": str(origin_x),
                                         "origin_y": str(origin_y),
-                                        "width": str(ncell_height),
-                                        "height": str(ncell_width),
+                                        "width": str(ncell_width),
+                                        "height": str(ncell_height),
                                         "filename": path_to_data + "OUTPUT/" +  file.split('/')[-1][:-4] + ".tif"
                                     }
                                 ]
