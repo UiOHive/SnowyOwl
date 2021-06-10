@@ -1,5 +1,11 @@
 app/snowyOwl.egg-info/*
 app/snowyowl/__pycache__/*
 .idea/
+.vscode/
+
 data/*
 appV2/.ipynb_checkpoints/
+analysis/test_anim.mp4
+analysis/test_anim_bis.mp4
+appV2/__pycache__/process_pcl.cpython-38.pyc
+analysis/anim/*
