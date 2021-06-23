@@ -20,9 +20,9 @@ from gdalconst import *
 # %%
 
 # Parameter setup
-src_dir = './data/experiment/tmp/'
-tmp_dir = './data/experiment/unzip/'
-dst_dir = './data/experiment/netcdf/'
+src_dir = '/mn/vann/climaland/LIVOXFinse/'
+tmp_dir = '/mn/vann/climaland/dems/unzip/'
+dst_dir = '/mn/vann/climaland/dems/netcdf/'
 compression = True
 create_netcdf = True
 fname_fmt_netcdf = '%Y%m%d.nc'
@@ -41,6 +41,7 @@ if not os.path.exists(tmp_dir):
 if not os.path.exists(dst_dir):
     logging.error("Sorry, no file in {} directory".format(dst_dir))
     raise Exception("Sorry, no directory {}".format(dst_dir))
+
 
 meta = pd.DataFrame({'fname': flist})
 # extract timestamp from filename
@@ -67,7 +68,10 @@ for mydate in meta.tst.dt.date.unique():
                 zipObj.extractall(tmp_dir)
         logging.info('File unzipped')
 
-        rast_list = glob.glob(tmp_dir + '*.tif')
+        if os.path.exist(tmp_dir + 'home/'):
+            rast_list = glob.glob(tmp_dir+'unzip/home/snowyowl/data/OUTPUT/*.tif'
+        else: 
+            rast_list = glob.glob(tmp_dir + '*.tif')
         rast_list.sort()
 
         df_tmp = meta.loc[meta.tst.dt.date == mydate].copy()
