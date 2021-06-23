@@ -9,3 +9,6 @@ analysis/test_anim.mp4
 analysis/test_anim_bis.mp4
 appV2/__pycache__/process_pcl.cpython-38.pyc
 analysis/anim/*
+
+analysis/.ipynb_checkpoints/
+analysis/workspace.code-workspace
