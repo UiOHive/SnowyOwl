@@ -68,8 +68,8 @@ for mydate in meta.tst.dt.date.unique():
                 zipObj.extractall(tmp_dir)
         logging.info('File unzipped')
 
-        if os.path.exist(tmp_dir + 'home/'):
-            rast_list = glob.glob(tmp_dir+'unzip/home/snowyowl/data/OUTPUT/*.tif')
+        if os.path.exists(tmp_dir + 'home/'):
+            rast_list = glob.glob(tmp_dir+'/home/snowyowl/data/OUTPUT/*.tif')
         else:
             rast_list = glob.glob(tmp_dir + '*.tif')
         rast_list.sort()
