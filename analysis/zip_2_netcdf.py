@@ -20,9 +20,15 @@ from gdalconst import *
 # %%
 
 # Parameter setup
-src_dir = '/mn/vann/climaland/LIVOXFinse/'
-tmp_dir = '/mn/vann/climaland/dems/unzip/'
-dst_dir = '/mn/vann/climaland/dems/netcdf/'
+if os.environ['USER'] == 'simonfi':
+    src_dir = '/mn/vann/climaland/LIVOXFinse/'
+    tmp_dir = '/mn/vann/climaland/dems/unzip/'
+    dst_dir = '/mn/vann/climaland/dems/netcdf/'
+if os.environ['USER'] == 'arcticsnow':
+    src_dir = '/home/arcticsnow/climaland/LIVOXFinse/'
+    tmp_dir = '/home/arcticsnow/climaland/dems/unzip/'
+    dst_dir = '/home/arcticsnow/climaland/dems/netcdf/'
+
 compression = True
 create_netcdf = True
 fname_fmt_netcdf = '%Y%m%d.nc'
@@ -69,7 +75,7 @@ for mydate in meta.tst.dt.date.unique():
         logging.info('File unzipped')
 
         if os.path.exists(tmp_dir + 'home/'):
-            rast_list = glob.glob(tmp_dir+'/home/snowyowl/data/OUTPUT/*.tif')
+            rast_list = glob.glob(tmp_dir+'home/snowyowl/data/OUTPUT/*.tif')
         else:
             rast_list = glob.glob(tmp_dir + '*.tif')
         rast_list.sort()
