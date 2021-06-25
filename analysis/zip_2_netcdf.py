@@ -16,12 +16,13 @@ import pandas as pd
 import xarray as xr
 import gdal
 from gdalconst import *
+import shutil
 
 # %%
 
 # Parameter setup
 if os.environ['USER'] == 'simonfi':
-    src_dir = '/mn/vann/climaland/LIVOXFinse/'
+    src_dir = '/mn/vann/climaland/dems/zip/'
     tmp_dir = '/mn/vann/climaland/dems/unzip/'
     dst_dir = '/mn/vann/climaland/dems/netcdf/'
 if os.environ['USER'] == 'arcticsnow':
@@ -122,8 +123,14 @@ for mydate in meta.tst.dt.date.unique():
                 print(' --- Cannot compile into netcdf date: {}'.format(mydate.strftime('%Y-%m-%d')))
 
             # Remove all remaining rasters in the tmp folder
-        for f_rast in rast_list:
-            os.remove(f_rast)
-        print(' --- Raster files removed')
+        if os.path.exists(tmp_dir + 'home/'):
+            try:
+                shutil.rmtree(tmp_dir + 'home/')
+            except OSError as e:
+                print("Error: %s : %s" % (tmp_dir + 'home/', e.strerror))
+        else:
+            for f_rast in rast_list:
+                os.remove(f_rast)
+            print(' --- Raster files removed')
     except:
         logging.error('Could not create netcdf for day {}'.format(mydate.strftime('%Y-%m-%d')))
