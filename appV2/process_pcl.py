@@ -186,7 +186,8 @@ def extract_dem(GSD= 0.1,
                 sampling_interval=180,
                 method='pdal',
                 path_to_data='/home/data/',
-                delete_las=True):
+                delete_las=True,
+                tif_to_zip=False):
     """
     Function to extract DEM using pdal writers
 
@@ -237,12 +238,11 @@ def extract_dem(GSD= 0.1,
                         })
                     pipeline = pdal.Pipeline(pip_filter_json)
                     pipeline.execute()
-
-                    # zip the geotiff and remove it
-					zipcmd = "sh -c \"cd " + path_to_data + "OUTPUT/ && zip " + file.split('/')[-1][:-4] + ".zip " + file.split('/')[-1][:-4] + ".tif\""
-                    # zipcmd = "zip " + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".zip " + path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif "
-                    os.system(zipcmd)
-                    os.remove(path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif")
+                    if tif_to_zip:
+                        # zip the geotiff and remove it
+                        zipcmd = "sh -c \"cd " + path_to_data + "OUTPUT/ && zip " + file.split('/')[-1][:-4] + ".zip " + file.split('/')[-1][:-4] + ".tif\""
+                        os.system(zipcmd)
+                        os.remove(path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif")
             # even if the las wasn't turned into a DEM, it is now meant to be removed :
             if delete_las:
                 os.remove(file)
@@ -333,7 +333,8 @@ if __name__ == "__main__":
                     width=config.getfloat('processing', 'dem_width'),
                     sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                     method=config.get('processing', 'dem_method'),
-                    path_to_data=config.get('processing', 'path_to_data'))
+                    path_to_data=config.get('processing', 'path_to_data'),
+                    tif_to_zip=config.get('processing', 'tif_to_zip'))
     if str2bool(args.las2laz):   
         logging.info('Converting las to laz')
         las_2_laz(path_to_data=config.get('processing', 'path_to_data'))

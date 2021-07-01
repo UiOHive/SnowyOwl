@@ -1,27 +1,45 @@
 # Script to convert geotiff to netcdf
 
-import xarray as xr
-import glob
+import glob, argparse, datetime
 import pandas as pd
-import argparse
+import xarray as xr
+import gdal
+from gdalconst import *
 
+def fillnodata(fname, band=1, maxSearchDist=5, smoothingIterations=0):
+    ET = gdal.Open(fname, GA_Update)
+    ETband = ET.GetRasterBand(band)
+    result = gdal.FillNodata(targetBand=ETband, maskBand=None,
+                             maxSearchDist=maxSearchDist, smoothingIterations=smoothingIterations)
+    ETband = None
+    ET = None
+    
 
-def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc'):
+def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc', only_yesterday=True):
     """
     function to store geotif into daily netcdf
 
     :param pwd: path to folder with geotif, str
     :param compression: copmress netcdf or not, defaults to True,  bool, optional
     :param filename_format: output file name format following datetime system, defaults to '%Y%m%d.nc',  str, optional
+    :param only_yesterday: only the files created the day before the script is run (in UTC day) are converted to netcdf. Script is meant to be run about 2h after UTC=00:00, so all files from today-1 have been processed to tif already
+ 
 
     TODO: 
         - option to delete geotif once they are stored as netcdf
     """    
 
     # list filename
-    flist = glob.glob(pwd + '/*.tif')
+    if only_yesterday:
+        date_yesterday=(datetime.utcnow()-datetime.timedelta(days=1)).strftime("%Y.%m.%d")    	
+        flist = glob.glob(pwd + '/' + date_yesterday +'*.tif')    
+    else:
+        flist = glob.glob(pwd + '/*.tif')
     flist.sort()
 
+    for f_rast in flist:
+        fillnodata(f_rast)
+        
     # create dataframe of file metadata
     meta = pd.DataFrame({'fname':flist})
     #extract timestamp from filename
@@ -60,14 +78,14 @@ def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc'):
 
 if __name__ == "__main__":
 
-    import argparse
-
+    import argparse, os
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path2tif', '-pt', help='Path to geotif file', default='../data/202104')
-    parser.add_argument('--fname_format', '-of', help='output filename format using datetime strftime syntax', default='%Y%m%d.nc')
-    parser.add_argument('--compression', '-c', help='compression flag', default='true')
+    parser.add_argument('--config_file', '-cf', help='Path to config file', default='/home/config.ini')
     args = parser.parse_args()
-
-    raster_to_ds_daily(args.path2tif, compression=args.compression, filename_format=args.fname_format)
+    
+    raster_to_ds_daily(config['processing'].get('path_to_data'),
+        compression=config['processing'].getboolean('netcdf_compression'),
+        filename_format=config['processing'].get('netcdf_file_name_format'),
+        only_yesterday=config['processing'].getboolean('netcdf_for_yesterday_only'))
 
     
