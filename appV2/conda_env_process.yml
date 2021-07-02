@@ -1,0 +1,15 @@
+name: snowyowl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas
+  - xarray
+  - scipy
+  - pdal
+  - gdal
+  - rasterio
+  - netcdf4
+  - h5netcdf
+  - pip:
+    - laspy==1.7.0

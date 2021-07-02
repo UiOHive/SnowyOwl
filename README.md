@@ -1,7 +1,18 @@
 # SnowyOwl
-Snow lidar time-lapse for snow surface morphology and wind transport flux estimate
+S. Filhol and L.  Girod. 2021
 
-All hardware design available in the folder `hardware`, and and Python App in `app`.
+Snow lidar time-lapse for snow surface morphology and wind transport flux estimate.
+
+## Description
+Snowyowl is a set of tools written Python to acquire and process point clouds from [Livox lidar](https://www.livoxtech.com/horizon) Horizon. The setup consists of one lidar Livox Horizon, one Raspberry Pi, and one Desktop machine. The Pi acquires the raw data stored in `.bin` files. It pushes the data then to the desktop computer. The Desktop computer:
+1. converts the `.bin` point clouds into `.las`
+2. crop the `.las` and store the cropped pointcloud into `.laz` compressed file
+3. compute a raster from the point cloud with bands (min, max, mean, count, ) using the library [pdal](https://pdal.io)
+4. interpolate the min raster with [gdal fillnodata](https://gdal.org/programs/gdal_fillnodata.html)
+5. combine and compress daily the raster into single netcdf files
+
+All hardware design available in the folder `hardware`, and and Python App in `appV2`.
+
 
 ## Python App
 
@@ -52,11 +63,14 @@ conda install pandas ipython
 pip install github/OpenPyLivox
 
 crontab -e
-# add the following line to the Crontab to transfer files every 30 minutes. 
-0,30 * * * * sh github/SnowyOwl/appV2/scp_transfer_file.sh
-# CHECK config in scp_transfer_file.sh
-# launch python program after reboot:
+# add the following line to the Crontab to transfer files every 30 minutes:
+----
+# Push raw livox file in tmp to snowyowl machine and archive file to SSD
+26,56 * * * * bash /home/livoxpi/git/SnowyOwl/appV2/scp_transfer_file_acq2proc.sh
+#1,31 * * * * /home/livoxpi/miniconda3/envs/livoxenv/bin/python /home/livoxpi/git/SnowyOwl/appV2/acquisition.py -cf /home/livoxpi/config.ini
 @reboot sleep 30 && /home/livoxpi/miniconda3/envs/livoxenv/bin/python /home/livoxpi/git/SnowyOwl/appV2/acquisition.py -cf /home/livoxpi/config.ini
+----
+
 
 # Create two folders one for temporary storage of data and one for archiving
 mkdir <project_path>/tmp
@@ -68,6 +82,7 @@ sudo visudo -f /etc/sudoers.d/reboot_privilege`
 #add line : 
 <user> ALL=(root) NOPASSWD: /sbin/reboot
 ```
+
 #### Processing Computer
 ```sh
 
@@ -76,8 +91,8 @@ ssh-keygen
 ssh-copy-id <user>@<storage_machine>
 
 # Clone SnowyOwl repository
-mkdir github
-cd github
+mkdir git
+cd git
 git clone https://github.com/UiOHive/SnowyOwl
 cp SnowyOwl/appV2/example_config.ini ~/config.ini
 
@@ -89,9 +104,13 @@ rm -rf ~/miniconda3/miniconda.sh
 ~/miniconda3/bin/conda init bash
 
 # create a Python VE
-conda create -n proc_env
-conda activate proc_env
-conda install pandas ipython
+conda env create -f conda_env_process.yml
+conda activate snowyowl
+
+# install manually openpylivox
+cd git
+git clone git@github.com:ArcticSnow/OpenPyLivox.git
+pip install -e OpenPyLivox/.
 
 cd
 nano config.ini
@@ -99,46 +118,27 @@ nano config.ini
 
 crontab -e
 # add the following two lines to the Crontab
-* 12 * * * sh github/SnowyOwl/appV2/scp_transfer_file.sh
-0 * * * * /miniconda3/env/proc_env/bin/python /github/SnowyOwl/appV2/process_pcl.py -cf config.ini
+0 4 * * * /home/lucg/miniconda3/envs/snowyowl/bin/python /home/lucg/git/SnowyOwl/appV2/geotiff2netcdf.py -cf /home/lucg/config.ini
+5,35 * * * * /home/lucg/miniconda3/envs/snowyowl/bin/python /home/lucg/git/SnowyOwl/appV2/process_pcl.py -cf /home/lucg/config.ini
 
 # Create two folders one for temporary storage of data and one for archiving
 mkdir <project_path>/las_raw
+mkdir <project_path>/las_crop
 mkdir <project_path>/las_referenced
 mkdir <project_path>/OUTPUT
 mkdir <project_path>/archive
+mkdir <project_path>/TIFs
+
 ```
 
 
-## TODO
-- Luc & Simon: 
-  - Python appV2
-    - Acquisisition
-      - TEST code
-      - add logging lines
-      - add logic to check folders exist
-    - Processing:
-      - add logic to check folders exist `/las_raw, /las_referenced, /OUTPUT, ...`
-      - implement pcl processing to DEM with pandas and store as netcdf
-      - add logging lines
-      
-    - File transfer
-      - grab bash script from Pi. See if bash can read config.ini to get settings
-  - Python app:
+## TODO:
+- [ ] change logic of pi reboot. Find out if rebooting lidar can solve the connection problem (currently rebooting every 30min)
+- [ ] find out where the Campbell laser is pointing out to recenter the pointcloud crop on it
+- [ ] find out how to do some logging within the functions outside the main statemment of the scripts. See this [stackoverflow](https://stackoverflow.com/questions/5974273/python-avoid-passing-logger-reference-between-functions#5974391)
+- [ ] find out more aboute the ~2m band with no point in the point clouds right above the surface
+- [ ] figure out rotation matrix as it is rather empirical at the moment
+- [ ] Check when OpenPyLivox will upgrade code to be compatible with laspy v2 that it can export `.laz` directly. Change code accordingly then
 
-    - [ ] reorganize the app to be cleaner
-      - [ ] Aquisition code by the Pi
-      - [ ] File transfer to Processing machine
-      - [ ] Processing code for computing DEMs and cropped PCL
-      - [ ] File transfer to UiO storage
-      - [ ] possibility to adjust Aquisition on the fly (via config)
-    - [ ] create a single config file for the whole stack and use [configparser](https://docs.python.org/3/library/configparser.html)
-    - [ ] configure SSH to Vann or to Latice server directly
-    - [ ] solve disconnect problem Pi to Livox (breaks after 2hrs)
-    - [ ] define accurately the rotation matirx to apply. Crop z-range for potential crazy outliers
-    - [ ] refine data to produce:
-      - [ ] 10 minute DEM -> store in netcdf file if possible (with xarray)
-      - [ ] 20s PCL crop (1*1m) including the sensor center
-      - [ ] 1hr full PCL 
 
     
