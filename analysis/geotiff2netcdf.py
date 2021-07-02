@@ -3,7 +3,7 @@
 import glob, argparse, datetime
 import pandas as pd
 import xarray as xr
-import gdal
+from osgeo import gdal
 from gdalconst import *
 
 def fillnodata(fname, band=1, maxSearchDist=5, smoothingIterations=0):
