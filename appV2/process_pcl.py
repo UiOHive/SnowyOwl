@@ -232,7 +232,7 @@ def extract_dem(GSD= 0.1,
                                         "origin_y": str(origin_y),
                                         "width": str(ncell_width),
                                         "height": str(ncell_height),
-                                        "filename": path_to_data + "OUTPUT/" +  file.split('/')[-1][:-4] + ".tif"
+                                        "filename": path_to_data + "TIFs/" +  file.split('/')[-1][:-4] + ".tif"
                                     }
                                 ]
                         })
@@ -240,9 +240,9 @@ def extract_dem(GSD= 0.1,
                     pipeline.execute()
                     if tif_to_zip:
                         # zip the geotiff and remove it
-                        zipcmd = "sh -c \"cd " + path_to_data + "OUTPUT/ && zip " + file.split('/')[-1][:-4] + ".zip " + file.split('/')[-1][:-4] + ".tif\""
+                        zipcmd = "sh -c \"cd " + path_to_data + "TIFs/ && zip " + file.split('/')[-1][:-4] + ".zip " + file.split('/')[-1][:-4] + ".tif\""
                         os.system(zipcmd)
-                        os.remove(path_to_data + "OUTPUT/" + file.split('/')[-1][:-4] + ".tif")
+                        os.remove(path_to_data + "TIFs/" + file.split('/')[-1][:-4] + ".tif")
             # even if the las wasn't turned into a DEM, it is now meant to be removed :
             if delete_las:
                 os.remove(file)
@@ -311,6 +311,7 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'las_crop', exist_ok=True)
     os.makedirs(path_to_data + 'OUTPUT', exist_ok=True)
     os.makedirs(path_to_data + 'SENT', exist_ok=True)
+    os.makedirs(path_to_data + 'TIFs', exist_ok=True)
 
     if str2bool(args.bin2las):
         logging.info("Convert bin to las")
@@ -334,7 +335,7 @@ if __name__ == "__main__":
                     sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                     method=config.get('processing', 'dem_method'),
                     path_to_data=config.get('processing', 'path_to_data'),
-                    tif_to_zip=config.getbollean('processing', 'tif_to_zip'))
+                    tif_to_zip=config.getboolean('processing', 'tif_to_zip'))
     if str2bool(args.las2laz):   
         logging.info('Converting las to laz')
         las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
