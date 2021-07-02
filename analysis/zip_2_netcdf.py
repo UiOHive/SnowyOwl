@@ -14,7 +14,7 @@ import glob, logging
 import os
 import pandas as pd
 import xarray as xr
-import gdal
+from osgeo import gdal
 from gdalconst import *
 import shutil
 

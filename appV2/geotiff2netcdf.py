@@ -7,7 +7,7 @@ from osgeo import gdal
 #from gdalconst import *
 
 def fillnodata(fname, band=1, maxSearchDist=5, smoothingIterations=0):
-    ET = gdal.Open(fname, GA_Update)
+    ET = gdal.Open(fname, gdal.GA_Update)
     ETband = ET.GetRasterBand(band)
     result = gdal.FillNodata(targetBand=ETband, maskBand=None,
                              maxSearchDist=maxSearchDist, smoothingIterations=smoothingIterations)
@@ -32,11 +32,11 @@ def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc', only_
     # list filename
     if only_yesterday:
         date_yesterday=(datetime.datetime.utcnow()-datetime.timedelta(days=1)).strftime("%Y.%m.%d")    	
-        flist = glob.glob(pwd + '/' + date_yesterday +'*.tif')    
+        flist = glob.glob(pwd + 'TIFs/' + date_yesterday +'*.tif')    
     else:
-        flist = glob.glob(pwd + '/*.tif')
+        flist = glob.glob(pwd + 'TIFs/*.tif')
     flist.sort()
-
+    print(flist)
     for f_rast in flist:
         fillnodata(f_rast)
         
@@ -59,7 +59,7 @@ def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc', only_
         geotiffs_ds = geotiffs_ds.rename(var_name)
 
         # save to netcdf file
-        fname_nc = pwd + '/' + meta.tst.loc[meta.tst.dt.day==date].iloc[0].strftime(filename_format)
+        fname_nc = pwd + 'OUTPUT/' + meta.tst.loc[meta.tst.dt.day==date].iloc[0].strftime(filename_format)
         if compression:
             encode = {"min":{"compression": "gzip", "compression_opts": 9}, 
                         "max":{"compression": "gzip", "compression_opts": 9},
@@ -75,6 +75,8 @@ def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc', only_
         # clear memory cache before next loop
         geotiffs_da = None
         geotiffs_ds = None
+    for file in flist:
+        os.remove(file)
 
 if __name__ == "__main__":
 
@@ -86,9 +88,15 @@ if __name__ == "__main__":
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(args.config_file)
 
-    raster_to_ds_daily(config['processing'].get('path_to_data'),
-        compression=config['processing'].getboolean('netcdf_compression'),
-       # filename_format=config['processing'].get('netcdf_file_name_format'),
-        only_yesterday=config['processing'].getboolean('netcdf_for_yesterday_only'))
+    logging.basicConfig(filename=config.get('processing','path_to_data') + 'Processing.log', level=logging.DEBUG,
+                        format='%(asctime)s - %(levelname)s : %(message)s')
+    logging.debug("Converting rasters to compressed netcdf")
 
+    try:
+        raster_to_ds_daily(config['processing'].get('path_to_data'),
+             compression=config['processing'].getboolean('netcdf_compression'),
+             # filename_format=config['processing'].get('netcdf_file_name_format'),
+             only_yesterday=config['processing'].getboolean('netcdf_for_yesterday_only'))
+    except:
+        logging.error("Conversion raster to netcdf failed")
     
