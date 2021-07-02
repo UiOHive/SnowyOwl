@@ -334,7 +334,7 @@ if __name__ == "__main__":
                     sampling_interval=config.getint('processing', 'dem_sampling_interval'),
                     method=config.get('processing', 'dem_method'),
                     path_to_data=config.get('processing', 'path_to_data'),
-                    tif_to_zip=config.get('processing', 'tif_to_zip'))
+                    tif_to_zip=config.getbollean('processing', 'tif_to_zip'))
     if str2bool(args.las2laz):   
         logging.info('Converting las to laz')
         las_2_laz(path_to_data=config.get('processing', 'path_to_data'))
