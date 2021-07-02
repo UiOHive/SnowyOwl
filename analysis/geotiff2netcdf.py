@@ -1,10 +1,10 @@
 # Script to convert geotiff to netcdf
 
-import glob, argparse, datetime
+import glob, argparse, datetime, configparser, logging
 import pandas as pd
 import xarray as xr
 from osgeo import gdal
-from gdalconst import *
+#from gdalconst import *
 
 def fillnodata(fname, band=1, maxSearchDist=5, smoothingIterations=0):
     ET = gdal.Open(fname, GA_Update)
@@ -31,7 +31,7 @@ def raster_to_ds_daily(pwd, compression=True, filename_format='%Y%m%d.nc', only_
 
     # list filename
     if only_yesterday:
-        date_yesterday=(datetime.utcnow()-datetime.timedelta(days=1)).strftime("%Y.%m.%d")    	
+        date_yesterday=(datetime.datetime.utcnow()-datetime.timedelta(days=1)).strftime("%Y.%m.%d")    	
         flist = glob.glob(pwd + '/' + date_yesterday +'*.tif')    
     else:
         flist = glob.glob(pwd + '/*.tif')
@@ -83,9 +83,12 @@ if __name__ == "__main__":
     parser.add_argument('--config_file', '-cf', help='Path to config file', default='/home/config.ini')
     args = parser.parse_args()
     
+    config = configparser.ConfigParser(allow_no_value=True)
+    config.read(args.config_file)
+
     raster_to_ds_daily(config['processing'].get('path_to_data'),
         compression=config['processing'].getboolean('netcdf_compression'),
-        filename_format=config['processing'].get('netcdf_file_name_format'),
+       # filename_format=config['processing'].get('netcdf_file_name_format'),
         only_yesterday=config['processing'].getboolean('netcdf_for_yesterday_only'))
 
     
