@@ -1,0 +1,11 @@
+name: livoxenv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - ipython
+  - h5netcdf
+  - ipython
+  - pip:
+    - laspy==1.7.0
