@@ -12,6 +12,9 @@ import openpylivox as opl
 import glob, os
 import pdal, json
 import pandas as pd
+import datetime
+from osgeo import gdal
+import xarray as xr
 
 
 def rotation_matrix_pdal(extrinsic=[0,0,0,0,0,0]):
@@ -35,9 +38,10 @@ def rotation_matrix_pdal(extrinsic=[0,0,0,0,0,0]):
 def convert_bin_to_las(path_to_data='/home/data/'):
     file_list = glob.glob(path_to_data + '*.bin')
     for file in file_list:
-        opl.convertBin2LAS(file, deleteBin=True)
+        opl.convertBin2LAS(file, deleteBin=False)
         os.remove(file)
-        print(file, ' removed.')
+        os.rename(file+'.las', file[:-4]+'.las')
+        print(file, ' removed and las renamed.')
 
 def rotate_point_clouds(extrinsic=[0,0,0,0,0,0], z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5])', path_to_data='/home/data/', delete_las=True):
     """
@@ -115,7 +119,7 @@ def tmp_rotate_point_clouds(z_range='[-20:20]', crop_corners='([-20, 10], [-5, 5
                                 },
                             {
                                 "type":"writers.las",
-                                "filename": path_to_data + file.split('/')[-1]
+                                "filename": path_to_data + file.split('/')[-1][:-4] + "_rot.las"
                             }
                         ]
                 })
@@ -242,3 +246,70 @@ def extract_dem(GSD= 0.1,
                 os.remove(file)
         except Exception:
             print('Pdal pipeline to derive DEM failed')
+
+            # Script to convert geotiff to netcdf
+
+
+def fillnodata(fname, band=1, maxSearchDist=5, smoothingIterations=0):
+    ET = gdal.Open(fname, gdal.GA_Update)
+    ETband = ET.GetRasterBand(band)
+    result = gdal.FillNodata(targetBand=ETband, maskBand=None,
+                             maxSearchDist=maxSearchDist, smoothingIterations=smoothingIterations)
+    ETband = None
+    ET = None
+    
+
+def raster_to_ds_daily(dir_input, dir_output, compression=True, filename_format='%Y%m%d.nc'):
+    """
+    function to store geotif into daily netcdf
+
+    :param dir_input: path to folder with geotif, str
+    :param dir_output: path to output folder, str
+    :param compression: copmress netcdf or not, defaults to True,  bool, optional
+    :param filename_format: output file name format following datetime system, defaults to '%Y%m%d.nc',  str, optional
+    """    
+
+    # list filename
+    flist = glob.glob(dir_input + '*.tif')
+    flist.sort()
+    print(flist)
+    for f_rast in flist:
+        fillnodata(f_rast)
+        
+    # create dataframe of file metadata
+    meta = pd.DataFrame({'fname':flist})
+    #extract timestamp from filename
+    meta['tst'] = pd.to_datetime(meta.fname.apply(lambda x: x.split('/')[-1][:-4]), format="%Y.%m.%dT%H-%M-%S_rot")
+
+    # Create on netcdf file per day
+    for date in meta.tst.dt.day.unique():
+        # create time variable
+        time_var = xr.Variable('time', meta.tst.loc[meta.tst.dt.day==date])
+        # open raster files in datarray
+        geotiffs_da = xr.concat([xr.open_rasterio(i) for i in meta.fname.loc[meta.tst.dt.day==date]], dim=time_var)
+        # drop all NaN values
+        geotiffs_da = geotiffs_da.where(geotiffs_da!=-9999, drop=True)
+        # rename variables with raster band names
+        var_name = dict(zip(geotiffs_da.band.values, geotiffs_da.descriptions))
+        geotiffs_ds = geotiffs_da.to_dataset('band')
+        geotiffs_ds = geotiffs_ds.rename(var_name)
+
+        # save to netcdf file
+        fname_nc = dir_output + meta.tst.loc[meta.tst.dt.day==date].iloc[0].strftime(filename_format)
+        if compression:
+            encode = {"min":{"compression": "gzip", "compression_opts": 9}, 
+                        "max":{"compression": "gzip", "compression_opts": 9},
+                        "mean":{"compression": "gzip", "compression_opts": 9},
+                        "idw":{"compression": "gzip", "compression_opts": 9},
+                        "count":{"compression": "gzip", "compression_opts": 9},
+                        "stdev":{"compression": "gzip", "compression_opts": 9}}
+            geotiffs_ds.to_netcdf(fname_nc,  encoding=encode, engine='h5netcdf')
+        else:
+            geotiffs_ds.to_netcdf(fname_nc)
+        print('File saved: ', fname_nc)
+
+        # clear memory cache before next loop
+        geotiffs_da = None
+        geotiffs_ds = None
+    for file in flist:
+        os.remove(file)

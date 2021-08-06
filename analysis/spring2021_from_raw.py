@@ -16,42 +16,72 @@ Part 2
 2. 
 
 '''
-from wsn_client import query
-
 import xarray as xr
 import glob
 import pandas as pd
 import openpylivox as opl
 import pdal, json, os
-
-import configparser, logging
+import getpass
+import configparser, logging, sys
+sys.path.append('/home/' + getpass.getuser() + '/github/SnowyOwl/')
 from appV2 import process_pcl as pp
+import shutil
+import process as pp
 
+#------------------------------------------------------
+# Parameter
+sampling_interval=60 * 10 #minute
+GSD = 0.02
+dir_bin = '/media/' + getpass.getuser() + '/My Book/SO_spring_2021_processing/bin/'
+dir_netcdf = '/media/' + getpass.getuser() + '/My Book/SO_spring_2021_processing/netcdf/'
+dir_daily = '/media/' + getpass.getuser() + '/My Book/SO_spring_2021_processing/daily/'
 
+#------------------------------------------------------
+# List files
 
-# 1. Convert all point clouds to netcdf4 via geotiff
-
-archive_dir = '/media/arcticsnow/My Book/SnowyOwl_Bin_Archive/'
-proj_dir = '/media/arcticsnow/My Book/SO_spring_2021_processing/'
-flist = glob.glob(archive_dir)
+flist = glob.glob(dir_bin + '*.bin')
 flist.sort()
 
+meta = pd.DataFrame({'fname_archive':flist})
+
 # create dataframe of file metadata
-meta = pd.DataFrame({'fname':flist})
+meta = pd.DataFrame({'fname_archive':flist})
 #extract timestamp from filename
-meta['tst'] = pd.to_datetime(meta.fname.apply(lambda x: x.split('/')[-1][:-4]))
+meta['tst'] = pd.to_datetime(meta.fname_archive.apply(lambda x: x.split('/')[-1][:-4]), format="%Y.%m.%dT%H-%M-%S")
+meta['daily']=(meta.tst - pd.to_datetime('2021-03-11 00:00:00')).dt.days
 
-# Create on netcdf file per day
-for date in meta.tst.dt.day.unique():
-    # create time variable
-    time_var = xr.Variable('time', meta.tst.loc[meta.tst.dt.day==date])
+#------------------------------------------------------
+# Loop through each day available
 
-    # convert by daily batches. Use functions from process_pcl!!!!
-    pp.convert_bin_to_las()
-    pp.rotate_point_clouds()
-    pp.extract_dem()
-
-
-
-
-
+for day in meta.daily.unique():
+    print('......')
+    print('Processing Day ', day)
+    daily = meta.loc[meta.daily==day]
+    for file in daily.fname_archive:
+        # Copy files that fit the sampling period to the folder 
+        try:
+            tst_data = pd.to_datetime(file.split('/')[-1][:19],format="%Y.%m.%dT%H-%M-%S")
+            if (tst_data.second + 60*tst_data.minute + 3600*tst_data.hour) % sampling_interval == 0:
+                shutil.copy(file, dir_daily)
+        except IOerror:
+            print('ERROR: cannot move ', file)
+    print('-- File moved')
+    pp.convert_bin_to_las(path_to_data=dir_daily)
+    print('-- Bin converted to las')
+    pp.tmp_rotate_point_clouds(z_range='[-20:20]', 
+                               crop_corners='([-20, 10], [-5, 5])', 
+                               path_to_data=dir_daily, 
+                               delete_las=True)
+    print('-- Rotated pcl')
+    pp.extract_dem(GSD=GSD,
+                origin_x=-16.2,
+                origin_y=-4,
+                height=7.8,
+                width=22.3,
+                method='pdal',
+                path_to_data=dir_daily,
+                delete_las=True,
+                tif_to_zip=False)
+    print('-- Tif extracted')
+    pp.raster_to_ds_daily(dir_daily, dir_netcdf)
+    print('-- daily Netcdf compiled')
