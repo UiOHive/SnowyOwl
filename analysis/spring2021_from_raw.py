@@ -16,13 +16,42 @@ Part 2
 2. 
 
 '''
+from wsn_client import query
 
 import xarray as xr
 import glob
 import pandas as pd
 import openpylivox as opl
-import pdal
+import pdal, json, os
 
 import configparser, logging
-from app.process_pcl import *
+from appV2 import process_pcl as pp
+
+
+
+# 1. Convert all point clouds to netcdf4 via geotiff
+
+archive_dir = '/media/arcticsnow/My Book/SnowyOwl_Bin_Archive/'
+proj_dir = '/media/arcticsnow/My Book/SO_spring_2021_processing/'
+flist = glob.glob(archive_dir)
+flist.sort()
+
+# create dataframe of file metadata
+meta = pd.DataFrame({'fname':flist})
+#extract timestamp from filename
+meta['tst'] = pd.to_datetime(meta.fname.apply(lambda x: x.split('/')[-1][:-4]))
+
+# Create on netcdf file per day
+for date in meta.tst.dt.day.unique():
+    # create time variable
+    time_var = xr.Variable('time', meta.tst.loc[meta.tst.dt.day==date])
+
+    # convert by daily batches. Use functions from process_pcl!!!!
+    pp.convert_bin_to_las()
+    pp.rotate_point_clouds()
+    pp.extract_dem()
+
+
+
+
 
