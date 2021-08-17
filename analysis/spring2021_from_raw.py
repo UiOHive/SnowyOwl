@@ -30,7 +30,7 @@ import process as pp
 
 #------------------------------------------------------
 # Parameter
-sampling_interval=60 * 10 #minute
+sampling_interval=60 * 12 #minute
 GSD = 0.02
 dir_bin = '/media/' + getpass.getuser() + '/My Book/SO_spring_2021_processing/bin/'
 dir_netcdf = '/media/' + getpass.getuser() + '/My Book/SO_spring_2021_processing/netcdf/'
