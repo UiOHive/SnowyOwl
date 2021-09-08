@@ -281,12 +281,93 @@ def raster_to_ds_daily(dir_input, dir_output, compression=True, filename_format=
     #extract timestamp from filename
     meta['tst'] = pd.to_datetime(meta.fname.apply(lambda x: x.split('/')[-1][:-4]), format="%Y.%m.%dT%H-%M-%S_rot")
 
-    # Create on netcdf file per day
+    # Create one netcdf file per day
     for date in meta.tst.dt.day.unique():
         # create time variable
         time_var = xr.Variable('time', meta.tst.loc[meta.tst.dt.day==date])
         # open raster files in datarray
         geotiffs_da = xr.concat([xr.open_rasterio(i) for i in meta.fname.loc[meta.tst.dt.day==date]], dim=time_var)
+        # drop all NaN values
+        geotiffs_da = geotiffs_da.where(geotiffs_da!=-9999, drop=True)
+        # rename variables with raster band names
+        var_name = dict(zip(geotiffs_da.band.values, geotiffs_da.descriptions))
+        geotiffs_ds = geotiffs_da.to_dataset('band')
+        geotiffs_ds = geotiffs_ds.rename(var_name)
+
+        # save to netcdf file
+        fname_nc = dir_output + meta.tst.loc[meta.tst.dt.day==date].iloc[0].strftime(filename_format)
+        if compression:
+            encode = {"min":{"compression": "gzip", "compression_opts": 9}, 
+                        "max":{"compression": "gzip", "compression_opts": 9},
+                        "mean":{"compression": "gzip", "compression_opts": 9},
+                        "idw":{"compression": "gzip", "compression_opts": 9},
+                        "count":{"compression": "gzip", "compression_opts": 9},
+                        "stdev":{"compression": "gzip", "compression_opts": 9}}
+            geotiffs_ds.to_netcdf(fname_nc,  encoding=encode, engine='h5netcdf')
+        else:
+            geotiffs_ds.to_netcdf(fname_nc)
+        print('File saved: ', fname_nc)
+
+        # clear memory cache before next loop
+        geotiffs_da = None
+        geotiffs_ds = None
+    for file in flist:
+        os.remove(file)
+
+        
+def raster_to_ds_daily_single(file_input, dir_output='./', compression=True, filename_format='%Y%m%d.nc', remove_raster=True):
+    """
+    function to store geotif into daily netcdf
+
+    :param dir_input: path to folder with geotif, str
+    :param dir_output: path to output folder, str
+    :param compression: copmress netcdf or not, defaults to True,  bool, optional
+    :param filename_format: output file name format following datetime system, defaults to '%Y%m%d.nc',  str, optional
+    """    
+
+    
+    fillnodata(file)
+    geotiffs_da = xr.open_rasterio(file)
+    geotiffs_da = geotiffs_da.where(geotiffs_da!=-9999, drop=True)
+    var_name = dict(zip(geotiffs_da.band.values, geotiffs_da.descriptions))
+    geotiffs_ds = geotiffs_da.to_dataset('band')
+    geotiffs_ds = geotiffs_ds.rename(var_name)
+    
+    # save to netcdf file
+    fname_nc = dir_output + geotiffs_ds.time.strftime(filename_format)
+    if compression:
+        encode = {"min":{"compression": "gzip", "compression_opts": 9}, 
+                    "max":{"compression": "gzip", "compression_opts": 9},
+                    "mean":{"compression": "gzip", "compression_opts": 9},
+                    "idw":{"compression": "gzip", "compression_opts": 9},
+                    "count":{"compression": "gzip", "compression_opts": 9},
+                    "stdev":{"compression": "gzip", "compression_opts": 9}}
+        geotiffs_ds.to_netcdf(fname_nc,  encoding=encode, engine='h5netcdf')
+    else:
+        geotiffs_ds.to_netcdf(fname_nc)
+    print('File saved: ', fname_nc)
+
+    # clear memory cache before next loop
+    geotiffs_da = None
+    geotiffs_ds = None
+    
+    if remove_raster:
+        os.remove(file)
+        
+        
+        
+        
+    # create dataframe of file metadata
+    meta = pd.DataFrame({'fname':flist})
+    #extract timestamp from filename
+    meta['tst'] = pd.to_datetime(meta.fname.apply(lambda x: x.split('/')[-1][:-4]), format="%Y.%m.%dT%H-%M-%S_rot")
+
+    # Create one netcdf file per day
+    for date in meta.tst.dt.day.unique():
+        # create time variable
+        time_var = xr.Variable('time', meta.tst.loc[meta.tst.dt.day==date])
+        # open raster files in datarray
+        geotiffs_da = xr.open_rasterio(file)
         # drop all NaN values
         geotiffs_da = geotiffs_da.where(geotiffs_da!=-9999, drop=True)
         # rename variables with raster band names
