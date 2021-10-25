@@ -147,7 +147,7 @@ The lidar power (12V 3A) can be controlled by a relay on the Raspberry Pi. By de
 
 To turn the lidar off:
 ```python
-from relay_lib_seeed import *
+from relay_lib_seed import *
 
 relay_on(1)
 # apply a delay
@@ -167,6 +167,7 @@ This exposes a series of functions to your application:
 
 
 ## TODO:
+- [ ] Send email if no tif to compile into NetCDF at end of day (as a daily failure check)
 - [ ] change logic of pi reboot. Find out if rebooting lidar can solve the connection problem (currently rebooting every 30min)
 - [ ] htere seem to be prb de timestamo, at least for the first test. Check the DEMs are named properly. Check this out
 - [ ] find out where the Campbell laser is pointing out to recenter the pointcloud crop on it
