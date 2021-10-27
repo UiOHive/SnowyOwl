@@ -147,7 +147,7 @@ The lidar power (12V 3A) can be controlled by a relay on the Raspberry Pi. By de
 
 To turn the lidar off:
 ```python
-from relay_lib_seed import *
+from relay_lib_seeed import *
 
 relay_on(1)
 # apply a delay
