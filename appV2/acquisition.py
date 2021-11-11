@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(args.config_file)
-    path_to_data=config.get('acquisition', 'data_folder')
+    path_to_data = config.get('acquisition', 'data_folder')
     os.makedirs(path_to_data, exist_ok=True)
     os.makedirs(path_to_data + 'tmp', exist_ok=True)
     os.makedirs(path_to_data + 'archive', exist_ok=True)

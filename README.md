@@ -87,7 +87,17 @@ sudo visudo -f /etc/sudoers.d/reboot_privilege`
 <user> ALL=(root) NOPASSWD: /sbin/reboot
 
 sudo apt-get install fail2ban
+```
 
+The Snowyowl App has an email warning system in case the lidar is not responding or data are not acquired. 
+It will attempt to reboot the lidar prior to sending an email.
+
+To setup the email client, include the correct SMTP server and port, as well as the destination address in the
+`config.ini` file. Then in your `.bashrc` add the username and password information.
+
+```sh
+export MAIL_USER_LIVOX=user@gmail.com
+export MAIL_USER_LIVOX=my_password
 ```
 
 #### Processing Computer
