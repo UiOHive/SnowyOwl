@@ -16,6 +16,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import glob, os, subprocess
 import configparser, argparse
+import datetime
+from reboot_livox import reboot_lidar
 
 def ping_ip(current_ip_address):
         try:
@@ -34,20 +36,24 @@ def condition_alert():
     # check if Lidar has brought a new file
     return
 
-def send_email(mail_config, mail_dest, text):
-    # creates SMTP session
-    s = smtplib.SMTP(mail_config.get('mail_smtp_server'), mail_config.get("mail_smtp_port"))
-    s.starttls()                        # start TLS for security
-    s.login(mail_config.get('mail_user'), mail_config.get('mail_pwd'))        # Authentication
+def compose_email(from_email, to_email, subject, text):
     msg = MIMEMultipart("alternative")  # Instance of MIMEMultipart
-    msg["Subject"] = "LIVOX Alert"    # Write the subject
-    msg["From"] = mail_config.get('mail_user')
-    msg["To"] = mail_dest
+    msg["Subject"] = subject    # Write the subject
+    msg["From"] = from_email
+    msg["To"] = to_email
     # Attach the Plain body with the msg instance
     msg.attach(MIMEText(text, "plain"))
+    return msg
+
+def send_email(mail_config, mail_dest, msg):
+    # creates SMTP session
+    server = smtplib.SMTP_SSL(mail_config.get('mail_smtp'), mail_config.get("mail_smtp_port"))
+    time.sleep(2)
+    server.login(mail_config.get('mail_user'), mail_config.get('mail_pwd'))
+    time.sleep(2)
     # Sending the mail
-    s.sendmail(mail_config.get('mail_user'), mail_dest, msg.as_string())
-    s.quit()
+    server.sendmail(mail_config.get('mail_user'), mail_dest, msg.as_string())
+    server.quit()
 
 def alert_mail(mail_config, mail_dest):
     host_machine = os.uname()[1]
@@ -74,13 +80,34 @@ if __name__ == "__main__":
                    'mail_pwd': os.getenv('MAIL_PWD_LIVOX')}
 
     if not ping_ip(config.get('acquisition', 'scanner_IP')):
+        reboot_lidar(config)
+        if not ping_ip(config.get('acquisition', 'scanner_IP')):
+            txt = 'WARNING: Lidar from {} is not pinging, even after reboot attempt!'.format(os.uname()[1])
+            msg = compose_email(mail_config.get('mail_user'), mail_dest, 'Livox lidar WARNING', txt)
+            send_email(mail_config, mail_dest, msg)
 
-        # 1. test if file is missing
+    # 1. test if file is missing
+    flist = glob.glob(config.get('acquisition', 'data_folder') + 'archive/*.bin')
+    flist.sort()
+    last_file = datetime.datetime.strptime(flist[-1][:-4], "%Y.%m.%dT%H-%M-%S")
+    now = datetime.datetime.now()
+
+    if (now - last_file).seconds > config.getint('acquisition', 'scanning_interval')*5:
         # 2. try rebooting lidar and apply delay
-        # 3. check if lidar is now working
+        reboot_lidar(config)
+
+            # How to check if Lidar is working????
+
+
+
+
+
+            # 3. check if lidar is now working
 
         # 4. if not, send email
-        alert_mail(mail_config, mail_dest)
+        txt = ''
+        msg = compose_email(mail_config.get('mail_user'), mail_dest, 'Livox lidar WARNING', txt)
+        send_email(mail_config, mail_dest, msg)
     else:
 
 
