@@ -4,7 +4,7 @@
 CONFIG_FILE=config.ini
 TRANSFER="transfer_acq2proc"
 delete_transfered_file=true
-reboot_system=true
+reboot_system=false
 
 
 # Pull information from config_file
