@@ -10,9 +10,8 @@ TODO:
 
 import openpylivox as opl
 from datetime import datetime
-import time, logging
+import time, logging, sys
 import configparser
-from reboot_livox import reboot_lidar
 
 def acquire_clouds(scan_duration=3.0,
                    scan_interval=10,
@@ -67,6 +66,7 @@ def acquire_clouds(scan_duration=3.0,
         logging.error("Could not connect to Livox sensor with IP address " + IP_sensor)
 
 
+
 if __name__ == "__main__":
     import argparse, os
 
@@ -76,6 +76,18 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(args.config_file)
+    sys.path.append(config.get('acquisition', 'path_to_relay_pkg'))
+
+    def reboot_lidar(config):
+        relay_on(1)
+        print('---> Lidar is turned OFF')
+        time.sleep(20) # 20 second wait
+
+        # turn lidar on
+        relay_off(1)
+        time.sleep(30) # 20 second wait
+        print('---> Lidar is turned ON')
+
     path_to_data = config.get('acquisition', 'data_folder')
     os.makedirs(path_to_data, exist_ok=True)
     os.makedirs(path_to_data + 'tmp', exist_ok=True)
