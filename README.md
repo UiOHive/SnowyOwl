@@ -87,7 +87,17 @@ sudo visudo -f /etc/sudoers.d/reboot_privilege`
 <user> ALL=(root) NOPASSWD: /sbin/reboot
 
 sudo apt-get install fail2ban
+```
 
+The Snowyowl App has an email warning system in case the lidar is not responding or data are not acquired. 
+It will attempt to reboot the lidar prior to sending an email.
+
+To setup the email client, include the correct SMTP server and port, as well as the destination address in the
+`config.ini` file. Then in your `.bashrc` add the username and password information.
+
+```sh
+export MAIL_USER_LIVOX=user@gmail.com
+export MAIL_USER_LIVOX=my_password
 ```
 
 #### Processing Computer
@@ -167,6 +177,7 @@ This exposes a series of functions to your application:
 
 
 ## TODO:
+- [ ] Send email if no tif to compile into NetCDF at end of day (as a daily failure check)
 - [ ] change logic of pi reboot. Find out if rebooting lidar can solve the connection problem (currently rebooting every 30min)
 - [ ] htere seem to be prb de timestamo, at least for the first test. Check the DEMs are named properly. Check this out
 - [ ] find out where the Campbell laser is pointing out to recenter the pointcloud crop on it
