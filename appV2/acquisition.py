@@ -40,7 +40,7 @@ def acquire_clouds(scan_duration=3.0,
         sensor.setIMUdataPush(False)        # activate the IMU data stream (only for Horizon and Tele-15 sensors)
         sensor.setRainFogSuppression(False) # turn on (True) or off (False) rain/fog suppression on the sensor
         # False here because we are interested in catching snow particles moving through the sensor
-        while nb_scan_max == 0 or nb_scan < nb_scan_max:
+        while (nb_scan_max == 0 or nb_scan < nb_scan_max) and sensor._isConnected:
             # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
             # as it would drift, giving data points clouds not neatly spread in time, even if scan_interval is up to 24h
             while not ((datetime.utcnow().second + 60*datetime.utcnow().minute + 3600*datetime.utcnow().hour) % scan_interval == 0):
@@ -90,10 +90,11 @@ if __name__ == "__main__":
     TODO HERE: add logic to check if folder structure is good and existing
     '''
 
-    
-    acquire_clouds(scan_duration=config.getint('acquisition', 'scan_duration'),
-                   scan_interval=config.getint('acquisition', 'scanning_interval'),
-                   nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
-                   folder=config.get('acquisition', 'data_folder'),
-                   IP_sensor=config.get('acquisition', 'scanner_IP'),
-                   IP_computer=config.get('acquisition', 'computer_IP'))
+    while True:
+        acquire_clouds(scan_duration=config.getint('acquisition', 'scan_duration'),
+                       scan_interval=config.getint('acquisition', 'scanning_interval'),
+                       nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
+                       folder=config.get('acquisition', 'data_folder'),
+                       IP_sensor=config.get('acquisition', 'scanner_IP'),
+                       IP_computer=config.get('acquisition', 'computer_IP'))
+        

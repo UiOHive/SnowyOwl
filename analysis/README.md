@@ -5,6 +5,9 @@ S. Filhol, June 2021
 - compute `gdal_fillna()` on `min` band
 - store daily all raster into a compressed NETCDF. See file `geotiff2netcdf.py`
 
+## Notes
+See Obsidian notes `Continuous Lidar Monitoring.md`, and `livox_lidar_notes.md`
+
 
 ## Animation
 Produce videos of the surface changes. See the file `animate_snow.py`
