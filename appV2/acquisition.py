@@ -12,7 +12,7 @@ import openpylivox as opl
 from datetime import datetime
 import time, logging
 import configparser
-
+import reboot_livox
 
 def acquire_clouds(scan_duration=3.0,
                    scan_interval=10,
@@ -97,4 +97,4 @@ if __name__ == "__main__":
                        folder=config.get('acquisition', 'data_folder'),
                        IP_sensor=config.get('acquisition', 'scanner_IP'),
                        IP_computer=config.get('acquisition', 'computer_IP'))
-        
+        reboot_livox.reboot_lidar(config)
