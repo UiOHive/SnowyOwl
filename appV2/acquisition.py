@@ -50,8 +50,8 @@ def acquire_clouds(scan_duration=3.0,
             # (*** IMPORTANT: this command starts a new thread, so the current program (thread) needs to exist for the 'duration' ***)
             # capture the data stream and save it to a file (if applicable, IMU data stream will also be saved to a file)
             sensor.saveDataToFile(filename, secsToWait, scan_duration)
-			# Timer to check if the sensor.doneCapturing() is not bugging out somehow, killing the thread if more than twice the expected time has passed
-			AcquisitionStartTime=time.perf_counter()
+            # Timer to check if the sensor.doneCapturing() is not bugging out somehow, killing the thread if more than twice the expected time has passed
+            AcquisitionStartTime=time.perf_counter()
             while True:
                 if sensor.doneCapturing() or time.perf_counter()-AcquisitionStartTime>2*scan_duration:
                     break
