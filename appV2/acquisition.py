@@ -53,12 +53,15 @@ def acquire_clouds(scan_duration=3.0,
             # Timer to check if the sensor.doneCapturing() is not bugging out somehow, killing the thread if more than twice the expected time has passed
             AcquisitionStartTime=time.perf_counter()
             while True:
-                if sensor.doneCapturing() | ((time.perf_counter()-AcquisitionStartTime)>(2*scan_duration)):
+                if sensor.doneCapturing():
                     logging.info("Data capture stopped after {}s".format(time.perf_counter()-AcquisitionStartTime))
+                    if ((time.perf_counter()-AcquisitionStartTime)<(0.5*scan_duration)):
+                        logging.info("Data capture was much shorter than expected, dicsonnecting and statring again")
+                        sensor.disconnect()
+                    else:
+                        sensor.dataStop()
+                        logging.info("Lidar loop " + str(nb_scan) + " ==== Cloud acquired with name " + filename)
                     break
-            sensor.dataStop()
-
-            logging.info("Lidar loop " + str(nb_scan) + " ==== Cloud acquired with name " + filename)
             nb_scan += 1
         # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
         sensor.lidarSpinDown()
