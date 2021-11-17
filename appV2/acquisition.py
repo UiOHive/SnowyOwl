@@ -54,7 +54,7 @@ def acquire_clouds(scan_duration=3.0,
             AcquisitionStartTime=time.perf_counter()
             while True:
                 if sensor.doneCapturing() | ((time.perf_counter()-AcquisitionStartTime)>(2*scan_duration)):
-				    logging.info("Data capture stopped after {}s".format(time.perf_counter()-AcquisitionStartTime))
+                    logging.info("Data capture stopped after {}s".format(time.perf_counter()-AcquisitionStartTime))
                     break
             sensor.dataStop()
 
