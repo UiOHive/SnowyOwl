@@ -53,10 +53,13 @@ def acquire_clouds(scan_duration=3.0,
             # Timer to check if the sensor.doneCapturing() is not bugging out somehow, killing the thread if more than twice the expected time has passed
             AcquisitionStartTime=time.perf_counter()
             while True:
-                if sensor.doneCapturing():
+                if sensor.doneCapturing() or ((time.perf_counter()-AcquisitionStartTime)>(2*scan_duration)):
                     logging.info("Data capture stopped after {}s".format(time.perf_counter()-AcquisitionStartTime))
                     if ((time.perf_counter()-AcquisitionStartTime)<(0.5*scan_duration)):
-                        logging.info("Data capture was much shorter than expected, dicsonnecting and statring again")
+                        logging.info("Data capture was much shorter than expected, disconnecting and starting again")
+                        sensor.disconnect()
+                    elif ((time.perf_counter()-AcquisitionStartTime)>(2*scan_duration)):
+                        logging.info("Data capture was much longer than expected, disconnecting and starting again")
                         sensor.disconnect()
                     else:
                         sensor.dataStop()
