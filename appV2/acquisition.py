@@ -88,6 +88,7 @@ if __name__ == "__main__":
     sys.path.append(config.get('acquisition', 'path_to_relay_pkg'))
 
     def reboot_lidar(config):
+        from relay_lib_seeed import *
         relay_on(1)
         print('---> Lidar is turned OFF')
         time.sleep(20) # 20 second wait
@@ -116,6 +117,6 @@ if __name__ == "__main__":
                        scan_interval=config.getint('acquisition', 'scanning_interval'),
                        nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
                        folder=config.get('acquisition', 'data_folder'),
-                           IP_sensor=config.get('acquisition', 'scanner_IP'),
+                       IP_sensor=config.get('acquisition', 'scanner_IP'),
                        IP_computer=config.get('acquisition', 'computer_IP'))
         reboot_lidar(config)
