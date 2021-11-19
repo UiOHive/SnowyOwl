@@ -88,13 +88,13 @@ if __name__ == "__main__":
     sys.path.append(config.get('acquisition', 'path_to_relay_pkg'))
 
     def reboot_lidar(config):
-        from relay_lib_seeed import *
-        relay_on(1)
+        import relay_lib_seeed as rs
+        rs.relay_on(1)
         print('---> Lidar is turned OFF')
         time.sleep(20) # 20 second wait
 
         # turn lidar on
-        relay_off(1)
+        rs.relay_off(1)
         time.sleep(30) # 20 second wait
         print('---> Lidar is turned ON')
 
