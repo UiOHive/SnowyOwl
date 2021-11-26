@@ -11,11 +11,11 @@ def reboot_lidar(config):
 
     relay_on(1)
     print('---> Lidar is turned OFF')
-    time.sleep(20) # 20 second wait
+    time.sleep(config.getint('acquisition', 'scanning_interval')-60) # wait nearly as long as the scanning interval before tunring on again
 
     # turn lidar on
     relay_off(1)
-    time.sleep(30) # 20 second wait
+    time.sleep(20) # 20 second wait, to be sure the scanner is booted up
     print('---> Lidar is turned ON')
 
 if __name__ == "__main__":
