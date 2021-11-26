@@ -39,6 +39,7 @@ def acquire_clouds(scan_duration=3.0,
         sensor.setIMUdataPush(False)        # activate the IMU data stream (only for Horizon and Tele-15 sensors)
         sensor.setRainFogSuppression(False) # turn on (True) or off (False) rain/fog suppression on the sensor
         # False here because we are interested in catching snow particles moving through the sensor
+        print("\n***** Done setting parameters *****\n")
         while (nb_scan_max == 0 or nb_scan < nb_scan_max) and sensor._isConnected:
             # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
             # as it would drift, giving data points clouds not neatly spread in time, even if scan_interval is up to 24h
