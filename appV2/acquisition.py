@@ -31,7 +31,7 @@ def acquire_clouds(scan_duration=3.0,
     nb_scan = 0 # Reset value to 0 so the following logic works
     sensor = opl.openpylivox(True)
     connected = sensor.connect(IP_computer, IP_sensor,  60001,     50001,      40001)
-    if connected:
+    if sensor._isConnected:
         logging.info("Connection to LIVOX successful")
         sensor.setExtrinsicToZero()
         sensor.lidarSpinUp()                # Data Acquisition
