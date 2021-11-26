@@ -12,6 +12,7 @@ import openpylivox as opl
 from datetime import datetime
 import time, logging, sys
 import configparser
+import numpy as np
 
 def acquire_clouds(scan_duration=3.0,
                    scan_interval=10,
