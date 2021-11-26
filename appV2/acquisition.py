@@ -92,11 +92,11 @@ if __name__ == "__main__":
         import relay_lib_seeed as rs
         rs.relay_on(1)
         print('---> Lidar is turned OFF')
-        time.sleep(20) # 20 second wait
-
+        time.sleep(np.abs(config.getint('acquisition', 'scanning_interval')-60)) # wait nearly as long as the scanning interval before tunring on again
+        
         # turn lidar on
         rs.relay_off(1)
-        time.sleep(30) # 20 second wait
+        time.sleep(20) # 20 second wait, to be sure the scanner is booted up
         print('---> Lidar is turned ON')
 
     path_to_data = config.get('acquisition', 'data_folder')
