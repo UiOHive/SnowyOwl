@@ -115,10 +115,10 @@ if __name__ == "__main__":
     '''
 
     while True:
+        reboot_lidar(config)
         acquire_clouds(scan_duration=config.getint('acquisition', 'scan_duration'),
                        scan_interval=config.getint('acquisition', 'scanning_interval'),
                        nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
                        folder=config.get('acquisition', 'data_folder'),
                        IP_sensor=config.get('acquisition', 'scanner_IP'),
                        IP_computer=config.get('acquisition', 'computer_IP'))
-        reboot_lidar(config)
