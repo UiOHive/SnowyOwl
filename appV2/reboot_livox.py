@@ -4,6 +4,7 @@ Script to reboot lidar.
 '''
 import sys
 import time, logging, configparser
+import numpy as np
 
 def reboot_lidar(config):
     sys.path.append(config.get('acquisition', 'path_to_relay_pkg'))
@@ -11,7 +12,7 @@ def reboot_lidar(config):
 
     relay_on(1)
     print('---> Lidar is turned OFF')
-    time.sleep(config.getint('acquisition', 'scanning_interval')-60) # wait nearly as long as the scanning interval before tunring on again
+    time.sleep(np.abs(config.getint('acquisition', 'scanning_interval')-90)) # wait nearly as long as the scanning interval before tunring on again
 
     # turn lidar on
     relay_off(1)
