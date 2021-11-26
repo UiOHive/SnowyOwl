@@ -70,7 +70,7 @@ def acquire_clouds(scan_duration=3.0,
             nb_scan += 1
         # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
         #sensor.lidarSpinDown()
-        #sensor.disconnect()
+        sensor.disconnect()
         #logging.info("Disconnected from LIVOX, reached max nb of scans limit: {}".format(nb_scan_max))
     else:
         print("\n***** Could not connect to Livox sensor with IP address " + IP_sensor + " *****\n")
