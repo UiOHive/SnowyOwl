@@ -13,3 +13,5 @@ analysis/data/*
 
 analysis/.ipynb_checkpoints/
 analysis/workspace.code-workspace
+
+.ipynb_checkpoints/
