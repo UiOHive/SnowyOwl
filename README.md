@@ -124,6 +124,9 @@ rm -rf ~/miniconda3/miniconda.sh
 conda env create -f conda_env_process.yml
 conda activate snowyowl
 
+# newest laspy version not compatible yet
+pip install laspy==1.7
+
 # install manually openpylivox
 cd git
 git clone git@github.com:ArcticSnow/OpenPyLivox.git
@@ -188,4 +191,4 @@ This exposes a series of functions to your application:
 - [ ] install fail2ban on the Pi. Check if echobase has banned IPs
 
 
-    
+​    
