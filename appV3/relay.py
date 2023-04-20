@@ -43,8 +43,8 @@ if __name__ == "__main__":
 
     if args.switch.lower() == 'on':
         print(f'Turning relay {args.relay_id} ON')
-        bus.write_byte(PCF8574_addr, relays.get(str(args.relay_id)))
-        time.sleep(args.time_delay)
+        bus.write_byte(PCF8574_addr, relays.get(args.relay_id))
+        time.sleep(float(args.time_delay))
 
     if args.switch.lower() == 'off':
         print(f'Turning all relay OFF')
