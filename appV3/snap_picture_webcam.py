@@ -12,8 +12,8 @@ def snap_picture(fname, cam_param, path='./'):
     url = f"rtsp://{cam_param['cam_user']}:{cam_param['cam_pwd']}@{cam_param['cam_IP']}:{cam_param['cam_port']}/test.mjpg"
     print(url)
     cap = cv2.VideoCapture(url)
-    cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 3840)
-    cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 2160)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
 
     fout = f'{path}{fname}'
     cv2.imwrite(fout, cap.read()[1])
