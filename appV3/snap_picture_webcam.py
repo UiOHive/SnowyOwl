@@ -31,11 +31,11 @@ if __name__ == "__main__":
 
     fname = filename_builder()
     cam_param = {'cam_user':args.user,
-                 'cam_pwd':args.pwd,
+                 'cam_pwd':args.password,
                  'cam_IP':args.IP_address,
                  'cam_port':args.port}
 
-    snap_picture(fname, cam_param, path=config.get('webcam', 'dir_to_images'))
+    snap_picture(fname, cam_param, path=args.output_dir)
     #except:
     #    print('ERROR: problem with webcam')
 
