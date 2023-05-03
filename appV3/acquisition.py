@@ -21,16 +21,12 @@ def ping(host):
     return subprocess.call(command) == 0
 
 def acquire_clouds(scan_duration=3.0,
-                   scan_interval=10,
-                   nb_scan_max=5,
                    folder='/home/data/',
                    IP_sensor='192.168.13.104',
                    IP_computer='192.168.13.35'):
     """
     Function to connect and sample point clouds for a given time at every given interval.
     :param scan_duration: duration in second of a scan
-    :param scan_interval: time interval in seconds in between to scan
-    :param nb_scan_max: maximum number of scan until reconnection, set to 0 for infinite number of scan , in which cases the script will disconnect and start again every hour
     :param folder: folder to save .bin point clouds
     :param IP_sensor: IP address of the scanner
     :return:
@@ -85,7 +81,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--scan_duration', '-sd', help='Scan duration (s)', default=10)
-    parser.add_argument('--n_scans', '-n', help='Number of scans', default=1)
     parser.add_argument('--output_folder', '-o', help='Path to store bin file', default='/home/<user>/myscans/')
     parser.add_argument('--IP_scanner', '-ips', help='IP address of sensor', default='192.168.13.104')
     parser.add_argument('--IP_computer', '-ipc', help='IP address of computer', default='192.168.13.35')
@@ -105,8 +100,6 @@ if __name__ == "__main__":
     TODO HERE: add logic to check if folder structure is good and existing
     '''
     acquire_clouds(scan_duration=np.int64(args.scan_duration),
-                       scan_interval=np.int64(args.scanning_interval),
-                       nb_scan_max=np.int64(args.n_scans),
                        folder=args.output_folder,
                        IP_sensor=args.IP_scanner,
                        IP_computer=args.IP_computer)
