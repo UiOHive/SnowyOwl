@@ -1,6 +1,11 @@
 import cv2
 import datetime
 import argparse, os
+import subprocess
+
+def ping(host):
+    command = ['ping', '-c', '1', host]
+    return subprocess.call(command) == 0
 
 def filename_builder():
     today = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -8,17 +13,21 @@ def filename_builder():
     return filename
 
 def snap_picture(fname, cam_param, path='./'):
+    
+    if ping(cam_param['cam_IP']):
+        url = f"rtsp://{cam_param['cam_user']}:{cam_param['cam_pwd']}@{cam_param['cam_IP']}:{cam_param['cam_port']}/test.mjpg"
+        print(url)
+        cap = cv2.VideoCapture(url)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
 
-    url = f"rtsp://{cam_param['cam_user']}:{cam_param['cam_pwd']}@{cam_param['cam_IP']}:{cam_param['cam_port']}/test.mjpg"
-    print(url)
-    cap = cv2.VideoCapture(url)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
-
-    fout = f'{path}{fname}'
-    cv2.imwrite(fout, cap.read()[1])
-    print(f'---> Image {fname} stored as {fout}')
-    cap.release()
+        fout = f'{path}{fname}'
+        cv2.imwrite(fout, cap.read()[1])
+        print(f'---> Image {fname} stored as {fout}')
+        cap.release()
+    else:
+        print(f"IP {cam_param['cam_IP']} does not ping")
+        logging.error(f"IP {cam_param['cam_IP']} does not ping")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
