@@ -80,7 +80,7 @@ if __name__ == "__main__":
     import argparse, os
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scan_duration', '-sd', help='Scan duration (s)', default=10)
+    parser.add_argument('--scan_duration', '-d', help='Scan duration (s)', default=10)
     parser.add_argument('--output_folder', '-o', help='Path to store bin file', default='/home/<user>/myscans/')
     parser.add_argument('--IP_scanner', '-ips', help='IP address of sensor', default='192.168.13.104')
     parser.add_argument('--IP_computer', '-ipc', help='IP address of computer', default='192.168.13.35')
