@@ -40,7 +40,7 @@ def acquire_clouds(scan_duration=3.0,
         sensor = opl.openpylivox(True)
         connected = sensor.connect(IP_computer, IP_sensor,  60001,     50001,      40001)
         if sensor._isConnected:
-            logging.info("Connection to LIVOX successful")
+            logging.info("Connection to Livox scanner successful")
             sensor.setExtrinsicToZero()
             sensor.lidarSpinUp()                # Data Acquisition
             sensor.setLidarReturnMode(2)        # set lidar return mode (0 = single 1st return, 1 = single strongest return, 2 = dual returns
@@ -48,35 +48,27 @@ def acquire_clouds(scan_duration=3.0,
             sensor.setRainFogSuppression(False) # turn on (True) or off (False) rain/fog suppression on the sensor
             # False here because we are interested in catching snow particles moving through the sensor
             print("\n***** Done setting parameters *****\n")
-            while (nb_scan_max == 0 or nb_scan < nb_scan_max) and sensor._isConnected:
-                # Make sure the interval of acquisition give regular timestamp, instead of just using time.sleep()
-                # as it would drift, giving data points clouds not neatly spread in time, even if scan_interval is up to 24h
-                while not ((datetime.utcnow().second + 60*datetime.utcnow().minute + 3600 * datetime.utcnow().hour) % scan_interval == 0):
-                    time.sleep(0.5)
-                filename = folder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
-                sensor.dataStart_RT_B()  # start data stream (real-time writing of point cloud data to a BINARY file)
-                secsToWait = 0  # seconds, time delayed data capture start
-                # (*** IMPORTANT: this command starts a new thread, so the current program (thread) needs to exist for the 'duration' ***)
-                # capture the data stream and save it to a file (if applicable, IMU data stream will also be saved to a file)
-                sensor.saveDataToFile(filename, secsToWait, scan_duration)
-                # Timer to check if the sensor.doneCapturing() is not bugging out somehow, killing the thread if more than twice the expected time has passed
-                AcquisitionStartTime = time.perf_counter()
-                while True:
-                    if sensor.doneCapturing() or ((time.perf_counter()-AcquisitionStartTime)>(2*scan_duration)):
-                        logging.info("Data capture stopped after {}s".format(time.perf_counter()-AcquisitionStartTime))
-                        if ((time.perf_counter()-AcquisitionStartTime)<(0.5*scan_duration)):
-                            logging.info("Data capture was much shorter than expected, disconnecting and starting again")
-                            #sensor.disconnect()
-                        elif ((time.perf_counter()-AcquisitionStartTime)>(2*scan_duration)):
-                            logging.info("Data capture was much longer than expected, disconnecting and starting again")
-                            #sensor.disconnect()
-                        else:
-                            sensor.dataStop()
-                            logging.info(f"Lidar loop {nb_scan} ==== Cloud acquired with name {filename}")
-                        break
-                nb_scan += 1
-            # if you want to stop the lidar from spinning (ie., lidar to power-save mode)
-            #sensor.lidarSpinDown()
+            filename = folder + "tmp/" + datetime.utcnow().strftime("%Y.%m.%dT%H-%M-%S.bin")
+            sensor.dataStart_RT_B()  # start data stream (real-time writing of point cloud data to a BINARY file)
+            sec_wait = 0  # seconds, time delayed data capture start
+            # (*** IMPORTANT: this command starts a new thread, so the current program (thread) needs to exist for the 'duration' ***)
+            # capture the data stream and save it to a file (if applicable, IMU data stream will also be saved to a file)
+            sensor.saveDataToFile(filename, sec_wait, scan_duration)
+            acquisition_start_time = time.perf_counter()
+            while True:
+                if sensor.doneCapturing() or ((time.perf_counter()-acquisition_start_time)>(2*scan_duration)):
+                    logging.info("Data capture stopped after {}s".format(time.perf_counter()-acquisition_start_time))
+                    if (time.perf_counter() - acquisition_start_time)<(0.5 * scan_duration):
+                        logging.info("Data capture was much shorter than expected, disconnecting and starting again")
+                        #sensor.disconnect()
+                    elif (time.perf_counter() - acquisition_start_time)>(2 * scan_duration):
+                        logging.info("Data capture was much longer than expected, disconnecting and starting again")
+                        #sensor.disconnect()
+                    else:
+                        sensor.dataStop()
+                        logging.info(f"Lidar loop {nb_scan} ==== Cloud acquired with name {filename}")
+                    break
+
             sensor.disconnect()
             #logging.info("Disconnected from LIVOX, reached max nb of scans limit: {}".format(nb_scan_max))
         else:
@@ -92,19 +84,19 @@ if __name__ == "__main__":
     import argparse, os
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_file', '-cf', help='Path to config file', default='/home/config_lidar.ini')
+    parser.add_argument('--scan_duration', '-sd', help='Scan duration (s)', default=10)
+    parser.add_argument('--n_scans', '-n', help='Number of scans', default=1)
+    parser.add_argument('--output_folder', '-o', help='Path to store bin file', default='/home/<user>/myscans/')
+    parser.add_argument('--IP_scanner', '-ips', help='IP address of sensor', default='192.168.13.104')
+    parser.add_argument('--IP_computer', '-ipc', help='IP address of computer', default='192.168.13.35')
     args = parser.parse_args()
 
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.read(args.config_file)
-    sys.path.append(config.get('acquisition'))
-
-    path_to_data = config.get('acquisition', 'data_folder')
+    path_to_data = args.output_folder
     os.makedirs(path_to_data, exist_ok=True)
     os.makedirs(path_to_data + 'bins', exist_ok=True)
     os.makedirs(path_to_data + 'archive', exist_ok=True)
     
-    logging.basicConfig(filename=config.get('acquisition', 'data_folder') + 'Acquisition.log',
+    logging.basicConfig(filename=path_to_data + 'Acquisition.log',
                         level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
     logging.info('Reading config.ini file')
@@ -112,12 +104,9 @@ if __name__ == "__main__":
     '''
     TODO HERE: add logic to check if folder structure is good and existing
     '''
-
-    while True:
-        reboot_lidar(config)
-        acquire_clouds(scan_duration=config.getint('acquisition', 'scan_duration'),
-                       scan_interval=config.getint('acquisition', 'scanning_interval'),
-                       nb_scan_max=config.getint('acquisition', 'number_of_scan_max'),
-                       folder=config.get('acquisition', 'data_folder'),
-                       IP_sensor=config.get('acquisition', 'scanner_IP'),
-                       IP_computer=config.get('acquisition', 'computer_IP'))
+    acquire_clouds(scan_duration=np.int64(args.scan_duration),
+                       scan_interval=np.int64(args.scanning_interval),
+                       nb_scan_max=np.int64(args.n_scans),
+                       folder=args.output_folder,
+                       IP_sensor=args.IP_scanner,
+                       IP_computer=args.IP_computer)

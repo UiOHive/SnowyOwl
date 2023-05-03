@@ -7,7 +7,7 @@ Example:
     python onthefly.py -sd 20 -n 1 -o /home/tmp
 """
 
-from appV2 import acquisition as aq
+from appV3 import acquisition as aq
 import time
 
 def reboot_lidar():
@@ -26,13 +26,11 @@ if __name__ == "__main__":
     import argparse, os
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scan_duration', '-sd', help='Duration of a single scan (second)', default=20)
-    parser.add_argument('--scan_interval', '-t', help='Time interval in between 2 scans (min)', default=3)
+    parser.add_argument('--scan_duration', '-d', help='Duration of a single scan (second)', default=20)
     parser.add_argument('--nb_scan_max', '-n', help='Maximum number of scan to perform', default=1)
     parser.add_argument('--output_folder', '-o', help='Path to save output .bin files', default='/home/data')
     parser.add_argument('--IP_sensor', '-is', help='IP address of scanner', default='192.168.13.104')
     parser.add_argument('--IP_computer', '-ic', help='IP address of acquisition computer', default='192.168.13.35')
-    parser.add_argument('--reboot_scanner', '-rs', help='reboot scanner (bool)', default=False)
 
     args = parser.parse_args()
 

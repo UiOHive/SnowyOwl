@@ -47,7 +47,7 @@ if __name__ == "__main__":
         time.sleep(float(args.time_delay))
 
     if args.switch.lower() == 'off':
-        print(f'Turning all relay OFF')
+        print(f'Turning all relays OFF')
         #bus.write_byte(PCF8574_addr, relays.get(str(args.relay_id))) # Turn ON Relay 1
         bus.write_byte(PCF8574_addr, 0xFF)
         time.sleep(0.5)
