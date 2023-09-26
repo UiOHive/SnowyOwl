@@ -91,10 +91,9 @@ if __name__ == "__main__":
     os.makedirs(path_to_data + 'bins', exist_ok=True)
     os.makedirs(path_to_data + 'archive', exist_ok=True)
     
-    logging.basicConfig(filename=path_to_data + 'Acquisition.log',
+    logging.basicConfig(filename=path_to_data + 'lidar_acquisition.log',
                         level=logging.DEBUG,
                         format='%(asctime)s - %(levelname)s : %(message)s')
-    logging.info('Reading config.ini file')
 
     '''
     TODO HERE: add logic to check if folder structure is good and existing

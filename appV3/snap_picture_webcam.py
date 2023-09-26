@@ -1,7 +1,7 @@
 import cv2
 import datetime
 import argparse, os
-import subprocess
+import subprocess, logging
 
 def ping(host):
     command = ['ping', '-c', '1', host]
@@ -13,7 +13,7 @@ def filename_builder():
     return filename
 
 def snap_picture(fname, cam_param, path='./'):
-    
+
     if ping(cam_param['cam_IP']):
         url = f"rtsp://{cam_param['cam_user']}:{cam_param['cam_pwd']}@{cam_param['cam_IP']}:{cam_param['cam_port']}/test.mjpg"
         print(url)
@@ -37,6 +37,10 @@ if __name__ == "__main__":
     parser.add_argument('--password', '-pwd', help='Password of webcam', default='*******')
     parser.add_argument('--output_dir', '-o', help='directory for output image', default='./myfolder/')
     args = parser.parse_args()
+
+    logging.basicConfig(filename=args.output_dir + 'webcam.log',
+                        level=logging.DEBUG,
+                        format='%(asctime)s - %(levelname)s : %(message)s')
 
     fname = filename_builder()
     cam_param = {'cam_user':args.user,
