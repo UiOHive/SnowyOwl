@@ -35,7 +35,7 @@ if __name__ == "__main__":
     PCF8574_addr = 0x20
 
     if args.initial_all_off:
-        print(f'Turning all relay OFF')
+        print('Turning all relay OFF')
         bus.write_byte(PCF8574_addr, 0xFF) # Turn all relays OFF
 
     # in prep. of switch relay individually
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         time.sleep(float(args.time_delay))
 
     if args.switch.lower() == 'off':
-        print(f'Turning all relays OFF')
+        print('Turning all relays OFF')
         #bus.write_byte(PCF8574_addr, relays.get(str(args.relay_id))) # Turn ON Relay 1
         bus.write_byte(PCF8574_addr, 0xFF)
         time.sleep(0.5)
