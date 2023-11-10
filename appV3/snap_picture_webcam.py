@@ -15,11 +15,12 @@ def filename_builder():
 def snap_picture(fname, cam_param, path='./'):
 
     if ping(cam_param['cam_IP']):
-        fname = f"{datetime.datetime.now().strftime('%Y%m%d%H%M')}_cam.png."
+        fname = f"{datetime.datetime.now().strftime('%Y%m%d%H%M')}_cam.png"
         cmd = f"ffmpeg -rtsp_transport tcp -i rtsp://{cam_param['cam_user']}:{cam_param['cam_pwd']}@{cam_param['cam_IP']}/stream1 -frames:v 1 -y {path}{fname}"
         #url = f"rtsp://{cam_param['cam_user']}:{cam_param['cam_pwd']}@{cam_param['cam_IP']}:{cam_param['cam_port']}/test.mjpg"
         print(cmd)
         os.system(cmd)
+        #os.rename('~/video.png', path + fname)
 
         fout = f'{path}{fname}'
         
