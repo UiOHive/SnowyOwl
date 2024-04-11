@@ -1,6 +1,5 @@
 import openpylivox as opl
 import glob, os
-import pandas as pd
 from multiprocessing import Pool
 from pathlib import Path
 
@@ -42,10 +41,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--project_directory', '-dir', help='Path to project directory', default='./myproject')
-    parser.add_argument('--bin_folder', '-bf', help='Path to project directory', default='bins')
-    parser.add_argument('--laz_folder', '-lf', help='Path to project directory', default='bins')
-    parser.add_argument('--file_pattern', '-bf', help='Path to project directory', default='20*.bin')
-    parser.add_argument('--delete_bin', '-db', help='Path to project directory', default='False', type=bool)
+    parser.add_argument('--bin_folder', '-bf', help='Folder containing bin files', default='bins')
+    parser.add_argument('--laz_folder', '-lf', help='Folder containing laz files', default='laz_raw')
+    parser.add_argument('--file_pattern', '-fp', help='File pattern of the bin file to convert', default='20*.bin')
+    parser.add_argument('--delete_bin', '-db', help='Delete bin files or not True/False', default='False', type=bool)
     parser.add_argument('--num_proc', '-nc', help='Number of core to use', default=4, type=int)
     args = parser.parse_args()
     
