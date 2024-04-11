@@ -21,7 +21,7 @@ def ping(host, interface=None):
     if interface is None:
         command = ['ping', '-c', '1', host]
     else:
-        command = ['ping', '-c', '1', '-I', 'enp2s0', host]
+        command = ['ping', '-c', '1', '-I', interface, host]
     return subprocess.call(command) == 0
 
 
