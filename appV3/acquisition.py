@@ -17,15 +17,19 @@ import numpy as np
 import subprocess
 
 
-def ping(host):
-    command = ['ping', '-c', '1', host]
+def ping(host, interface=None):
+    if interface is None:
+        command = ['ping', '-c', '1', host]
+    else:
+        command = ['ping', '-c', '1', '-I', interface, host]
     return subprocess.call(command) == 0
 
 
 def acquire_clouds(scan_duration=3.0,
                    folder='/home/data/',
                    IP_sensor='192.168.13.104',
-                   IP_computer='192.168.13.35'):
+                   IP_computer='192.168.13.35', 
+                  network_interface=None):
     """
     Function to connect and sample point clouds for a given time at every given interval.
     :param scan_duration: duration in second of a scan
@@ -33,7 +37,7 @@ def acquire_clouds(scan_duration=3.0,
     :param IP_sensor: IP address of the scanner
     :return:
     """
-    if ping(IP_sensor):
+    if ping(IP_sensor, interface=network_interface):
         nb_scan = 0  # Reset value to 0 so the following logic works
         sensor = opl.openpylivox(True)
         connected = sensor.connect(IP_computer, IP_sensor, 60001, 50001, 40001)
@@ -81,10 +85,11 @@ def acquire_clouds(scan_duration=3.0,
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scan_duration', '-d', help='Scan duration (s)', default=10)
+    parser.add_argument('--scan_duration', '-d', help='Scan duration (s)', type=int, default=10)
     parser.add_argument('--output_folder', '-o', help='Path to store bin file', default='/home/<user>/myscans/')
     parser.add_argument('--IP_scanner', '-ips', help='IP address of sensor', default='192.168.13.104')
     parser.add_argument('--IP_computer', '-ipc', help='IP address of computer', default='192.168.13.35')
+    parser.add_argument('--network_interface', '-i', help='Network interface', default='None')
     args = parser.parse_args()
 
     path_to_data = args.output_folder
@@ -102,4 +107,5 @@ if __name__ == "__main__":
     acquire_clouds(scan_duration=np.int64(args.scan_duration),
                    folder=args.output_folder,
                    IP_sensor=args.IP_scanner,
-                   IP_computer=args.IP_computer)
+                   IP_computer=args.IP_computer,
+                  network_interface=args.network_interface)
