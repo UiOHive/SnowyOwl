@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--bin_folder', '-bf', help='Folder containing bin files', default='bins')
     parser.add_argument('--laz_folder', '-lf', help='Folder containing laz files', default='laz_raw')
     parser.add_argument('--file_pattern', '-fp', help='File pattern of the bin file to convert', default='20*.bin')
-    parser.add_argument('--delete_bin', '-db', help='Delete bin files or not True/False', default='False', type=bool)
+    parser.add_argument('--delete_bin', '-db', help='Delete bin files or not True/False', default=False, type=bool)
     parser.add_argument('--num_proc', '-nc', help='Number of core to use', default=4, type=int)
     args = parser.parse_args()
     
