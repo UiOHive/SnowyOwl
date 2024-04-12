@@ -31,9 +31,9 @@ def convert_bin_to_laz(project_dir='/home/data',
 
     laz_list = (p / bin_folder).glob('*.laz')
 
-    for file in laz_list:
-        if os.path.isfile(file):
-            os.rename(file, str(p / laz_folder / file.name))
+    for file in list(laz_list):
+        if file.is_file():
+            os.rename(str(file), str(p / laz_folder / file.name))
     return
     
     
